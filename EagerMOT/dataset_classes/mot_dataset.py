@@ -19,6 +19,7 @@ class MOTDataset(ABC):
         self.splits: Set[str] = set()
 
     def assert_split_exists(self, split: str) -> None:
+        print(self.splits)
         assert split in self.splits, f"There is no split {split}"
 
     def assert_sequence_in_split_exists(self, split: str, sequence_name: str) -> None:

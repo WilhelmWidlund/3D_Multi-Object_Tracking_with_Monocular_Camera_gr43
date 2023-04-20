@@ -7,7 +7,7 @@ import os
 from nuscenes.eval.common.config import config_factory
 from nuscenes.eval.tracking.evaluate import TrackingEval
 
-import dataset_classes.kitti.mot_kitti as mot_kitti
+#import dataset_classes.kitti.mot_kitti as mot_kitti
 from dataset_classes.nuscenes.dataset import MOTDatasetNuScenes
 from utils import io
 from configs.params import TRAIN_SEQ, VAL_SEQ, TRACK_VAL_SEQ, build_params_dict, KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params
@@ -134,7 +134,7 @@ def perform_tracking_with_params(dataset, params,
 
 
 def run_on_nuscenes():
-    VERSION = "v1.0-trainval"
+    VERSION = "v1.0-mini"
     mot_dataset = MOTDatasetNuScenes(work_dir=NUSCENES_WORK_DIR,
                                      det_source=input_utils.CENTER_POINT,
                                      seg_source=input_utils.MMDETECTION_CASCADE_NUIMAGES,
@@ -172,5 +172,5 @@ def run_on_kitti():
 
 
 if __name__ == "__main__":
-    # run_on_nuscenes()
-    run_on_kitti()
+    run_on_nuscenes()
+    # run_on_kitti()
