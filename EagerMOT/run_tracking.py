@@ -65,7 +65,20 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     if total_frame_count == 0:
         return variant, run_info
 
-    dataset.save_all_mot_results(run_info["mot_3d_file"])
+    # ------- Altered code -------------------------------------------------------------------------------
+    # Setup a simple, alternative file path
+    dirlist = run_info["mot_3d_file"].split('\\')
+    simplepath = ""
+    print(dirlist)
+    for i in range(len(dirlist)-2):
+        simplepath += (dirlist[i] + "/")
+    # Choose whether to use the default, super complicated folder name or the simple one 
+    folder_name = run_info["mot_3d_file"]
+    #folder_name = simplepath
+    print("simplepath is " + simplepath)
+    # Save results
+    dataset.save_all_mot_results(folder_name)
+    # ------- End altered code -------------------------------------------------------------------------------
 
     if not print_debug_info:
         return variant, run_info
@@ -117,8 +130,12 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     final_unmatched_percentage = (run_info['unmatched_tracks_second_total'] / (
         run_info['matched_tracks_first_total'] + run_info['unmatched_tracks_first_total']))
     print(f"percentage tracks unmatched after both stages {100.0 * final_unmatched_percentage:.2f}%")
+    
+    # TODO: remove these 2 debugging printouts
+    print(f"\nrun_info is as follows:")
+    print(run_info)
 
-    print(f"\n3D MOT saved in {run_info['mot_3d_file']}", end="\n\n")
+    print(f"\n3D MOT saved in {folder_name}", end="\n\n")
     return variant, run_info
 
 

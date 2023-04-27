@@ -61,4 +61,5 @@ def cam_points_to_image_coordinates(img_points):
     img_points[:, 1] /= img_points[:, 2]
     # img_points = img_points[:, :2] / img_points[:, 2].reshape(-1, 1)
     img_plane_points = np.rint(img_points)
+    
     return img_plane_points[:, :2]

@@ -84,11 +84,12 @@ def visualize_3d(dataset, params, mode: str, output_folder_prefix: str,
         sequence.mot.set_track_manager_params(params)
         current_time_str = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
         img_folder_path = os.path.join(
-            f"{output_folder_prefix}_{mode}_{SPLIT}_rad{radius}_{'CP' if ('/centerpoint_val/') in result_json else 'ours'}_{current_time_str}", sequence_name)
+            f"{output_folder_prefix}_{mode}_{SPLIT}_rad{radius}_{'CP' if '/centerpoint_val/' in result_json else 'ours'}_{current_time_str}", sequence_name)
         if save_img:
+            print("img_folder_path is" + img_folder_path)
             io.makedirs_if_new(img_folder_path)
             if result_json:
-                with open(f"{img_folder_path}/{(result_json.split('/')[-1]).split('.json')[0]}.txt", "w") as file:
+                with open(f"{img_folder_path}/{(result_json.split('/')[-1]).split('.json')[0]}.txt", 'w') as file:
                     file.write(f"{result_json} was rendered here.")
                     file.close()
 
