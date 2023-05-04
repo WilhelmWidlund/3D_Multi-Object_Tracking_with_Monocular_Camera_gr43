@@ -25,6 +25,20 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     total_time_tracking = 0
     total_time_fusion = 0
     total_time_reporting = 0
+    # ----------------- Altered code -----------------------------------------------------
+    # Initiate/reset previously neglected accumulative variables
+    total_instances_any = 0
+    total_instances_both = 0
+    total_instances_3d_only = 0
+    total_instances_2d_only = 0
+    total_matched_tracks_first = 0
+    total_unmatched_tracks_first = 0
+    total_matched_tracks_second = 0
+    total_unmatched_tracks_second = 0
+    total_unmatched_dets2d_second = 0
+    # Record whether all sequences are skipped or not, for save purposes
+    seq_tracked = False
+    # ----------------- End altered code -----------------------------------------------------
 
     for sequence_name in target_sequences:
         if len(sequences_to_exclude) > 0:
@@ -38,10 +52,16 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         sequence.mot.set_track_manager_params(params)
         variant = variant_name_from_params(params)
         run_info = sequence.perform_tracking_for_eval(params)
+        # ----------------- Altered code -----------------------------------------------------
+        # Continue to next sequence if the current one wasn't tracked,
+        # else take the input pause time into account, set folder_name, and proceed with the current sequence
         if "total_time_mot" not in run_info:
             continue
-
-        total_time = time.time() - start_time
+        else:
+            seq_tracked = True
+            folder_name = run_info["mot_3d_file"]
+        total_time = time.time() - start_time - run_info['pause_time']
+        # ----------------- End altered code -----------------------------------------------------
         if print_debug_info:
             print(f'Sequence {sequence_name} took {total_time:.2f} sec, {total_time / 60.0 :.2f} min')
             print(
@@ -61,21 +81,40 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         total_time_tracking += run_info["total_time_mot"]
         total_time_reporting += run_info["total_time_reporting"]
         total_frame_count += len(sequence.frame_names)
-
-    if total_frame_count == 0:
+        # ----------------- Altered code -----------------------------------------------------
+        # Update previously neglected accumulative variables for the current sequence
+        total_instances_any += run_info['instances_both'] + run_info['instances_3d'] + run_info['instances_2d']
+        total_instances_both += run_info['instances_both']
+        total_instances_3d_only += run_info['instances_3d']
+        total_instances_2d_only += run_info['instances_2d']
+        total_matched_tracks_first += run_info['matched_tracks_first_total']
+        total_unmatched_tracks_first += run_info['unmatched_tracks_first_total']
+        total_matched_tracks_second += run_info['matched_tracks_second_total']
+        total_unmatched_tracks_second += run_info['unmatched_tracks_second_total']
+        total_unmatched_dets2d_second += run_info['unmatched_dets2d_second_total']
+        # ----------------- End altered code -----------------------------------------------------
+    
+    if not seq_tracked:
         return variant, run_info
 
     # ------- Altered code -------------------------------------------------------------------------------
-    # Setup a simple, alternative file path
-    dirlist = run_info["mot_3d_file"].split('\\')
-    simplepath = ""
-    print(dirlist)
-    for i in range(len(dirlist)-2):
-        simplepath += (dirlist[i] + "/")
-    # Choose whether to use the default, super complicated folder name or the simple one 
-    folder_name = run_info["mot_3d_file"]
-    #folder_name = simplepath
-    print("simplepath is " + simplepath)
+    # Choose whether to save in the default folder, or let the user input one
+    print("Would you like to save the results in the default folder? [y/n]")
+    savechoice = str(input())
+    if not savechoice in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
+        # Setup a file path to the project base folder
+        dirlist = folder_name.split('\\')
+        datasetpath = dirlist[0]
+        simplepathlist = datasetpath.split('/')
+        simplepath = ""
+        for i in range(len(simplepathlist)-2):
+            simplepath += (simplepathlist[i] + "/")
+        print("Write a path to save the results in...")
+        # Take input from user to their folder of choice, staerting from project base folder
+        userpath = str(input(simplepath))
+        folder_name = simplepath + userpath
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
     # Save results
     dataset.save_all_mot_results(folder_name)
     # ------- End altered code -------------------------------------------------------------------------------
@@ -96,44 +135,57 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     print(f'Total framerate: {total_frame_count / total_time:.2f} fps')
     print()
 
+    # ------- Altered code -------------------------------------------------------------------------------
+    # All these total results were previously calculated based only on the last sequence, now they take all
+    # processed sequences into account.
+
+    # TODO:
+    # 1. Calculate the key metrics we want to compare between methods
+    #   1.1 Look up what info is needed
+    #   1.2 Gather it if not already available here
+    #   1.3 Calculate
+    #   1.4 Display
+    # 2. Setup a framework for taking in another reidentification matrix and fusing (add? multiply? some kinda normalization?) with the existing one
+    #   2.1 Figure out _where_ to fuse them
+    #   2.2 Setup the basic framework there
+    #   2.3 Setup an extended framework, possibly elsewhere, giving the user a choice whether to do the whole fusion thing at all
+    #   2.4 ???
+    #   2.5 Profit
+
     # Fused instances stats
-    total_instances = run_info['instances_both'] + run_info['instances_3d'] + run_info['instances_2d']
-    if total_instances > 0:
-        print(f"Total instances 3D and 2D: {run_info['instances_both']} " +
-              f"-> {100.0 * run_info['instances_both'] / total_instances:.2f}%")
-        print(f"Total instances 3D only  : {run_info['instances_3d']} " +
-              f"-> {100.0 * run_info['instances_3d'] / total_instances:.2f}%")
-        print(f"Total instances 2D only  : {run_info['instances_2d']} " +
-              f"-> {100.0 * run_info['instances_2d'] / total_instances:.2f}%")
+    if total_instances_any > 0:
+        print(f"Total instances 3D and 2D: {total_instances_both} " +
+              f"-> {100.0 * total_instances_both / total_instances_any:.2f}%")
+        print(f"Total instances 3D only  : {total_instances_3d_only} " +
+              f"-> {100.0 * total_instances_3d_only / total_instances_any:.2f}%")
+        print(f"Total instances 2D only  : {total_instances_2d_only} " +
+              f"-> {100.0 * total_instances_2d_only / total_instances_any:.2f}%")
         print()
 
+
     # Matching stats
-    print(f"matched_tracks_first_total {run_info['matched_tracks_first_total']}")
-    print(f"unmatched_tracks_first_total {run_info['unmatched_tracks_first_total']}")
+    print(f"matched_tracks_first_total {total_matched_tracks_first}")
+    print(f"unmatched_tracks_first_total {total_unmatched_tracks_first}")
 
-    print(f"matched_tracks_second_total {run_info['matched_tracks_second_total']}")
-    print(f"unmatched_tracks_second_total {run_info['unmatched_tracks_second_total']}")
-    print(f"unmatched_dets2d_second_total {run_info['unmatched_dets2d_second_total']}")
+    print(f"matched_tracks_second_total {total_matched_tracks_second}")
+    print(f"unmatched_tracks_second_total {total_unmatched_tracks_second}")
+    print(f"unmatched_dets2d_second_total {total_unmatched_dets2d_second}")
 
-    first_matched_percentage = (run_info['matched_tracks_first_total'] /
-                                (run_info['unmatched_tracks_first_total'] + run_info['unmatched_tracks_first_total']))
+    first_matched_percentage = (total_matched_tracks_first /
+                                (total_matched_tracks_first + total_unmatched_tracks_first))
     print(f"percentage of all tracks matched in 1st stage {100.0 * first_matched_percentage:.2f}%")
 
-    second_matched_percentage = (
-        run_info['matched_tracks_second_total'] / run_info['unmatched_tracks_first_total'])
-    print(f"percentage of leftover tracks matched in 2nd stage {100.0 * second_matched_percentage:.2f}%")
+    second_matched_percentage_of_leftovers = (total_matched_tracks_second / total_unmatched_tracks_first)
+    print(f"percentage of leftover tracks matched in 2nd stage {100.0 * second_matched_percentage_of_leftovers:.2f}%")
 
-    second_matched_dets2d_second_percentage = (run_info['matched_tracks_second_total'] / (
-        run_info['unmatched_dets2d_second_total'] + run_info['matched_tracks_second_total']))
+    second_matched_dets2d_second_percentage = (total_matched_tracks_second / 
+                                                (total_unmatched_dets2d_second + total_matched_tracks_second))
     print(f"percentage dets 2D matched in 2nd stage {100.0 * second_matched_dets2d_second_percentage:.2f}%")
 
-    final_unmatched_percentage = (run_info['unmatched_tracks_second_total'] / (
-        run_info['matched_tracks_first_total'] + run_info['unmatched_tracks_first_total']))
+    final_unmatched_percentage = (total_unmatched_tracks_second / (
+        total_matched_tracks_first + total_unmatched_tracks_first))
     print(f"percentage tracks unmatched after both stages {100.0 * final_unmatched_percentage:.2f}%")
-    
-    # TODO: remove these 2 debugging printouts
-    print(f"\nrun_info is as follows:")
-    print(run_info)
+     # ------- End altered code -------------------------------------------------------------------------------
 
     print(f"\n3D MOT saved in {folder_name}", end="\n\n")
     return variant, run_info

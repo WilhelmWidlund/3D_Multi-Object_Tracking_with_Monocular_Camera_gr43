@@ -82,11 +82,13 @@ def visualize_3d(dataset, params, mode: str, output_folder_prefix: str,
         print(f'Sequence {sequence_name}')
         sequence = dataset.get_sequence(SPLIT, sequence_name)
         sequence.mot.set_track_manager_params(params)
-        current_time_str = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
+        #current_time_str = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
+        #img_folder_path = os.path.join(
+        #    f"{output_folder_prefix}_{mode}_{SPLIT}_rad{radius}_{'CP' if '/centerpoint_val/' in result_json else 'ours'}_{current_time_str}", sequence_name)
         img_folder_path = os.path.join(
-            f"{output_folder_prefix}_{mode}_{SPLIT}_rad{radius}_{'CP' if '/centerpoint_val/' in result_json else 'ours'}_{current_time_str}", sequence_name)
+            f"{output_folder_prefix}_{mode}_{SPLIT}_rad{radius}_{'CP' if '/centerpoint_val/' in result_json else 'ours'}", sequence_name)
         if save_img:
-            print("img_folder_path is" + img_folder_path)
+            print("img_folder_path is " + img_folder_path)
             io.makedirs_if_new(img_folder_path)
             if result_json:
                 with open(f"{img_folder_path}/{(result_json.split('/')[-1]).split('.json')[0]}.txt", 'w') as file:
@@ -134,7 +136,7 @@ def visualize_3d(dataset, params, mode: str, output_folder_prefix: str,
                 vis.get_view_control().convert_from_pinhole_camera_parameters(view_control_params)
             else:
                 set_view_control(vis.get_view_control())
-                vis.get_render_option().load_from_json("render_option.json")
+                #vis.get_render_option().load_from_json("render_option.json")
                 is_first_frame = is_first_sequence = False
 
             refresh_visualizer(vis)
@@ -396,11 +398,11 @@ if __name__ == "__main__":
     json_to_parse = os.path.join(MOUNT_PATH, args.result_path)
 
     visualize_3d(mot_dataset, params_to_run, mode="mot_submitted", output_folder_prefix='output/polarmot', world=True, 
-        target_sequences=target_sequences, target_frame=20, result_json=json_to_parse, radius=0.06, save_img=True)
+        target_sequences=target_sequences, target_frame=20, result_json=json_to_parse, radius=0.06, save_img=False)
     # visualize_3d(mot_dataset, params_to_run, mode="det", output_folder_prefix='output/polarmot', world=False, target_sequences=target_sequences, save_img=True)
     # visualize_3d(mot_dataset, params_to_run, mode="mot", output_folder_prefix='output/polarmot', world=True, target_sequences=target_sequences, save_img=True)
     # visualize_3d(mot_dataset, params_to_run, mode="annotations", output_folder_prefix='output/polarmot', world=True, target_sequences=target_sequences, save_img=True)
 
-    # visualize_tracking_results_in_2d(mot_dataset, params_to_run, json_to_parse, output_folder_prefix='/output/polarmot',
-    #                                  default_cam_only=args.default_cam_only, save_img=True, render=False, suffix=args.suffix)
+    #visualize_tracking_results_in_2d(mot_dataset, params_to_run, json_to_parse, output_folder_prefix='/output/polarmot',
+    #                                  default_cam_only=args.default_cam_only, save_img=False, render=False, suffix=args.suffix)
 

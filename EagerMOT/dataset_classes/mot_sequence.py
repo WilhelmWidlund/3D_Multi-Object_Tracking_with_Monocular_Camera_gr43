@@ -4,6 +4,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import List, Iterable, Mapping, Dict, Any, Optional, IO
+from shutil import rmtree
 
 import numpy as np
 
@@ -54,11 +55,32 @@ class MOTSequence(ABC):
             self.get_results_folder_name(params, folder_identifier, "2d_projected_3d"), self.name)
 
         run_info: Dict[str, Any] = defaultdict(int)
+        run_info["pause_time"] = 0
 
         if mot_3d_file is None:
-            print(f'Sequence {self.name} already has results. Skipped')
-            print('=====================================================================================')
-            return run_info
+            # ------- Altered code -------------------------------------------------------------------------------
+            # When results already exist for a sequence, ask whether to overwrite or skip that sequence
+            print(f'Sequence {self.name} already has results. Overwrite? [y/n]')
+            start_pause_time = time.time()
+            decision = str(input())
+            run_info["pause_time"] = time.time() - start_pause_time
+            if decision in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'overwrite', 'OVERWRITE', 'Overwrite']:
+                print(f'Deleting old results...')
+                mot_3d_file_path = self.get_results_folder_name(params, folder_identifier, "3d") + '/' + self.name + '.txt'
+                os.remove(mot_3d_file_path)
+                mot_2d_from_3d_file_path = self.get_results_folder_name(params, folder_identifier, "2d_projected_3d") + '/' + self.name + '.txt'
+                os.remove(mot_2d_from_3d_file_path)
+
+                print(f'Old results deleted. Starting tracking for sequence {self.name}')
+                mot_3d_file = io.create_writable_file_if_new(
+                    self.get_results_folder_name(params, folder_identifier, "3d"), self.name)
+                mot_2d_from_3d_file = io.create_writable_file_if_new(
+                    self.get_results_folder_name(params, folder_identifier, "2d_projected_3d"), self.name)
+            else:
+                print(f'Skipping sequence {self.name}')
+                print('=====================================================================================')
+                return run_info
+            # ------- End altered code -------------------------------------------------------------------------------
 
         run_info["mot_3d_file"] = mot_3d_file.name.split(self.name)[0]
         run_info["mot_2d_from_3d_file"] = mot_2d_from_3d_file.name.split(self.name)[0]
