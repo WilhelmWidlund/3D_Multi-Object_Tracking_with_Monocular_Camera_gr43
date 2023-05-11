@@ -13,6 +13,7 @@ from utils import io
 from configs.params import TRAIN_SEQ, VAL_SEQ, TRACK_VAL_SEQ, build_params_dict, KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params
 from configs.local_variables import KITTI_WORK_DIR, SPLIT, NUSCENES_WORK_DIR, MOUNT_PATH
 import inputs.utils as input_utils
+from tracking.utils_association import get_bias_ratio
 
 
 def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exclude=[], print_debug_info=True):
@@ -38,6 +39,22 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     total_unmatched_dets2d_second = 0
     # Record whether all sequences are skipped or not, for save purposes
     seq_tracked = False
+
+    # Ask if the user wants to concatenade the EagerMOT affinity matrix with one from elsewhere
+    print("Would you like to concatenade the EagerMOT affinity matrix with one from elsewhere? [y/n]")
+    savechoice = str(input())
+    if savechoice in ['y', 'Y', 'yes', 'YES', 'Yes', '1']:
+        # TODO: Make it print something appropriate here once we have figured out how the other matrix is imported...
+        #       would be nice if it takes in a choice of like how/where to get the other one from, and based on the
+        #       choice calls some appropriate 'getter' function... that way someone else could extend the 'getter'
+        #       for easy customization... basically any reidentification method could thus be added simply.
+        print("Placeholder string")
+        params['concatenate'] = True
+        # Get bias ratio from user
+        params['concatenate_bias_ratio'] = get_bias_ratio()
+    else:
+        params['concatenate'] = False
+
     # ----------------- End altered code -----------------------------------------------------
 
     for sequence_name in target_sequences:
@@ -142,7 +159,7 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
 
     # TODO:
     # 1. Setup a framework for taking in another re-identification matrix and fusing (add? multiply? some kinda normalization?) with the existing one
-    #   2.1 Figure out _where_ to fuse them
+    #
     #   2.2 Setup the basic framework there
     #   2.3 Setup an extended framework, possibly elsewhere, giving the user a choice whether to do the whole fusion thing at all
     #   2.4 ???

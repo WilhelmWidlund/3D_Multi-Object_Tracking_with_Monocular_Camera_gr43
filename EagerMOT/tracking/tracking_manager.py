@@ -81,6 +81,8 @@ class TrackManager(object):
                 else:
                     track_indices_without_motion_models.append(track_i)
 
+            # TODO: 4. The path to assignment continues here, calling the
+            #          associate_instances_to_tracks_3d_iou function in data_association.py
             # print(f"Frame: {self.frame_count - 1}")
             # The 1st matching stage via 3D IoU
             matched_instances_to_tracks_first, unmatched_det_indices_first, unmatched_motion_track_indices_first = \
@@ -180,7 +182,6 @@ class TrackManager(object):
                 total_unmatched_leftover_instances += len(unmatched_det_indices)
             assert total_matched_leftover_instances + total_unmatched_leftover_instances == total_leftover_det_instances
 
-            # TODO: 4. The path to assignment continues here, calling the match_multicam function in data_association.py
             matched_tracks_to_cam_instances_second = match_multicam(matched_indices, leftover_tracks)
             run_info["matched_tracks_second_total"] += len(matched_tracks_to_cam_instances_second)
             run_info["unmatched_tracks_second_total"] += len(unmatched_track_indices_final)

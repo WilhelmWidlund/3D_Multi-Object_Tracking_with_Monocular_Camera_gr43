@@ -8,8 +8,8 @@ from scipy.optimize import linear_sum_assignment
 from inputs.bbox import Bbox2d, Bbox3d, ProjectsToCam
 from inputs.detection_2d import Detection2D
 from utils.utils_geometry import convert_bbox_coordinates_to_corners, box_2d_area
-from tracking.utils_association import (iou_bbox_2d_matrix, iou_bbox_3d_matrix,
-                                        distance_2d_matrix, distance_2d_dims_matrix, distance_2d_full_matrix)
+from tracking.utils_association import (iou_bbox_2d_matrix, iou_bbox_3d_matrix, distance_2d_matrix,
+                                        distance_2d_dims_matrix, distance_2d_full_matrix, concatenate_matrices)
 from tracking.tracks import Track
 from objects.fused_instance import FusedInstance
 
@@ -46,9 +46,25 @@ def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Map
         matrix_3d_sim = distance_2d_dims_matrix(detected_coordinates, track_coordinates)
         matrix_3d_sim *= -1
     elif params['first_matching_method'] == "dist_2d_full":
+        # This one is used...
         detected_coordinates = [instance.bbox3d.kf_coordinates for instance in detected_instances]
         matrix_3d_sim = distance_2d_full_matrix(detected_coordinates, track_coordinates)
         matrix_3d_sim *= -1
+    # This is the best place to concatenate the affinity matrices. Here, matrix_3d_sim has the results from the EagerMOT
+    # method, so if we can get the corresponding affinity matrix from the visual recognition network here aswell, then
+    # that's it. So we need to...
+
+    # Dimensions, layout etc. of matrix_3d_sim:
+    #       matrix_3d_sim is a np.array with dimensions num_detections X num_tracklets,
+    #       and in matrix_3d_sim[i, j] is the matching score for {detection_i, track_j}
+    # TODO: 1. (Elias) make the image recognition network deliver an affinity matrix with the same dimensions, layout etc.
+    # TODO: 2. Concatenate them
+    #       2.1 Figure out where to put 'concatenate' and 'concatenate_bias_ratio' into params
+    #           (probably in run_tracking.py since params comes along aaaaaaall the way from there...)
+    if params['concatenate'] == True:
+        matrix_visual_recog = np.zeros((len(detected_coordinates), len(track_coordinates)), dtype=np.float32)
+        # TODO: 2.2 Somehow fill the visual recognition matrix with the appropriate values...
+        matrix_3d_sim_test = concatenate_matrices(matrix_3d_sim, -matrix_visual_recog, params['concatenate_bias_ratio'])
 
     matched_indices, unmatched_det_ids, unmatched_track_ids = \
         perform_association_from_similarity(len(detected_instances), len(tracks), matrix_3d_sim)
@@ -182,80 +198,6 @@ def match_3d_2d_detections(dets_3d: Sequence[Bbox3d], cam: str, dets_2d: Sequenc
         unmatched_dets_2d_ids.extend([indices_dets_2d_current_class[det_2d_i]
                                       for det_2d_i in unmatched_dets_2d_ids_class])
     return matched_indices, unmatched_dets_3d_ids, unmatched_dets_2d_ids
-
-
-def NEW_match_multicam(candidate_matches: Mapping[int, Sequence[CamDetectionIndices]],
-                   instances_3d: Sequence[ProjectsToCam]) -> Dict[int, CamDetectionIndices]:
-    """ 
-    Matches each 3D instance (3D detection / track) with a single 2D detection given 
-    a list of possible detections to match to. Decides which candidate detection to assign
-    based on the area of the 2D projection of the 3D instance in that camera.
-    The intuition is that the cam where the 3D object is the most prevalent
-    will most likely have its 2D projection recognized correctly
-
-    :param candidate_matches: maps entities to a *sequence* of possible 2D detections (Detections in THIS frame)
-    :param instances_3d: entities that need unique matches (Tracks from PAST frames)
-    :return: dict mapping original entities to a *single* 2D detection
-    """
-    # TODO 5: THIS is the function where the assignment happens! Figure out how to incorporate the additional model here
-    # TODO: QUESTION: For speed's sake, isn't it better to only send candidate_matches through the recognition network?
-    # TODO: Or does that fuck with our ability to reduce ID swaps? It does, doesn't it, since we let all the 3d
-    # TODO: matchings go through unchanged in that case... But to fix it we would need to only create an affinity matrix
-    # TODO: from the 3d matching aswell
-    # TODO: The 3d association shit has an affinity matrix called matrix_3d_sim!
-    # TODO: Look into that shit before doing anything else!S
-    # Idea: In stead of immediately storing the best match, in an overwriting fashion in chosen_cam_det, one could
-    # just insert the area, normalized, into an affinity matrix in the for loop. Then, after the loop, we can make the
-    # concatenation!
-    # ----------------- Altered code -----------------------------------------------------------------------------------
-
-    # TODO: Create zero matrix of dimensions (all_old_instances, instances_3d)
-    # old_instance_count = len(all_old_instances)
-    # affinity_matrix = np.zeros(
-
-    # The NumPy zeros() function
-    np.zeros(
-        shape,  # Int or tuple of ints
-        dtype=float,  # Data type for array
-        order='C',  # Memory optimization
-        like=None  # Reference object to help create
-    )
-
-    # Need: All old instances, not just candidate_matches...
-    matched_indices: Dict[int, CamDetectionIndices] = {}
-
-    # TODO: loop over stuff in all_old_instances instead of candidate_matches
-    for instance_i, cam_det_2d_indices in candidate_matches.items():
-        assert cam_det_2d_indices  # has to be at least 1 candidate match
-        if len(cam_det_2d_indices) == 1:
-            # If there is only one candidate, match with it
-            matched_indices[instance_i] = cam_det_2d_indices[0]
-        else:
-            # if matches were made in multiple cameras,
-            # select the camera with the largest projection of the 3D detection
-            instance_3d = instances_3d[instance_i]
-            largest_area = 0.0
-
-            for cam, det_2d_i in cam_det_2d_indices:
-                area = box_2d_area(instance_3d.bbox_2d_in_cam(cam))
-                assert area > 0, f"All of the candidate 2D projections have to be valid {instance_3d.bbox_2d_in_cam(cam)}"
-
-                # TODO: Normalize area
-                # area_norm = area/frame_area
-                # Need: frame_area
-
-                # TODO: Put area_norm
-            assert largest_area > 0, "3D instance has to have at least one valid 2D projection"
-            #matched_indices[instance_i] = chosen_cam_det
-
-            # assuming that matches were correct in multiple cameras
-            # simply discard duplicate 2D detections and don't treat them as unmatched
-            # another option is to allow multiple 2D detections for each 3D instance and ignore this function
-            #
-            # if matches were incorrect, then these "duplicates" should be added
-            # to the rest of unmatched detections, but we will assume matches are correct
-    return matched_indices
-    # ----------------- End altered code -------------------------------------------------------------------------------
 
 def match_multicam(candidate_matches: Mapping[int, Sequence[CamDetectionIndices]],
                    instances_3d: Sequence[ProjectsToCam]) -> Dict[int, CamDetectionIndices]:
