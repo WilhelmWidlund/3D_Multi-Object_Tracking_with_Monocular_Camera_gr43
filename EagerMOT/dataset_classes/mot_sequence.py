@@ -92,6 +92,7 @@ class MOTSequence(ABC):
 
             frame = self.get_frame(frame_name)
 
+            # TODO: 2. The path to assignment continues here, calling the perform_tracking function in mot_frame.py
             predicted_instances = frame.perform_tracking(params, run_info)
 
             start_reporting = time.time()

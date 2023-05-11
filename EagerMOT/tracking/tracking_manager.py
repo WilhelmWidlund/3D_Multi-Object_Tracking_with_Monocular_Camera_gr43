@@ -46,7 +46,8 @@ class TrackManager(object):
 
     def update(self, fused_instances: Iterable[FusedInstance], params: Dict,
                frame_data: Dict, run_info: Dict, ego_transform=None, angle_around_y=None):
-        """ Matches current frame's detections with existing tracks and manages their lifecycle. Should be called for each frame even with empty detections
+        """ Matches current frame's detections with existing tracks and manages their lifecycle.
+            Should be called for each frame even with empty detections.
 
         :param fused_instances: list of FusedInstance objects from the current frame
         :param params: dictionary of tracking parameters, see configs.params
@@ -179,6 +180,7 @@ class TrackManager(object):
                 total_unmatched_leftover_instances += len(unmatched_det_indices)
             assert total_matched_leftover_instances + total_unmatched_leftover_instances == total_leftover_det_instances
 
+            # TODO: 4. The path to assignment continues here, calling the match_multicam function in data_association.py
             matched_tracks_to_cam_instances_second = match_multicam(matched_indices, leftover_tracks)
             run_info["matched_tracks_second_total"] += len(matched_tracks_to_cam_instances_second)
             run_info["unmatched_tracks_second_total"] += len(unmatched_track_indices_final)

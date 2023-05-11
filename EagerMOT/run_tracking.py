@@ -51,6 +51,7 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         sequence = dataset.get_sequence(SPLIT, sequence_name)
         sequence.mot.set_track_manager_params(params)
         variant = variant_name_from_params(params)
+        # TODO: 1. The path to assignment starts here, calling the perform_tracking_for_eval function in mot_sequence.py
         run_info = sequence.perform_tracking_for_eval(params)
         # ----------------- Altered code -----------------------------------------------------
         # Continue to next sequence if the current one wasn't tracked,
@@ -98,21 +99,21 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         return variant, run_info
 
     # ------- Altered code -------------------------------------------------------------------------------
-    # Choose whether to save in the default folder, or let the user input one
+    # Choose whether to save in the base project folder, or let the user input a sub-folder thereof
+    # Setup a file path to the project base folder
+    dirlist = folder_name.split('\\')
+    datasetpath = dirlist[0]
+    simplepathlist = datasetpath.split('/')
+    folder_name = ""
+    for i in range(len(simplepathlist) - 2):
+        folder_name += (simplepathlist[i] + "/")
     print("Would you like to save the results in the default folder? [y/n]")
     savechoice = str(input())
     if not savechoice in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
-        # Setup a file path to the project base folder
-        dirlist = folder_name.split('\\')
-        datasetpath = dirlist[0]
-        simplepathlist = datasetpath.split('/')
-        simplepath = ""
-        for i in range(len(simplepathlist)-2):
-            simplepath += (simplepathlist[i] + "/")
         print("Write a path to save the results in...")
         # Take input from user to their folder of choice, staerting from project base folder
-        userpath = str(input(simplepath))
-        folder_name = simplepath + userpath
+        userpath = str(input(folder_name))
+        folder_name += userpath
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
     # Save results
@@ -140,17 +141,15 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     # processed sequences into account.
 
     # TODO:
-    # 1. Calculate the key metrics we want to compare between methods
-    #   1.1 Look up what info is needed
-    #   1.2 Gather it if not already available here
-    #   1.3 Calculate
-    #   1.4 Display
-    # 2. Setup a framework for taking in another reidentification matrix and fusing (add? multiply? some kinda normalization?) with the existing one
+    # 1. Setup a framework for taking in another re-identification matrix and fusing (add? multiply? some kinda normalization?) with the existing one
     #   2.1 Figure out _where_ to fuse them
     #   2.2 Setup the basic framework there
     #   2.3 Setup an extended framework, possibly elsewhere, giving the user a choice whether to do the whole fusion thing at all
     #   2.4 ???
     #   2.5 Profit
+    # 2. Evaluate the HOTA metric
+    #   a) Implement it into the nuscenes-devkit
+    #   b) Find another given code that evaluates it on nuscenes datasets
 
     # Fused instances stats
     if total_instances_any > 0:

@@ -175,6 +175,7 @@ class MOTFrame(ABC):
             ego_transform, angle_around_y = self.transform_instances_to_world_frame()
 
         start_mot_ego = time.time()
+        # TODO: 3. The path to assignment continues here, calling the update function in tracking_manager.py
         predicted_instances = self.sequence.mot.update(self.fused_instances, params, self.data, run_info,
                                                        ego_transform=ego_transform, angle_around_y=angle_around_y)
         run_info["total_time_mot"] += time.time() - start_mot_ego
