@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --chdir /home/william
+#SBATCH --nodes 1
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 1
+#SBATCH --mem 8G
+#SBATCH --partition gpu
+#SBATCH --gres gpu:1
+#SBATCH --qos dlav
+#SBATCH --account civil-459-2023
+#SBATCH --reservation civil-459
+
+python scripts/main.py --config-file configs/im_osnet_x1_0_softmax_cosine_amsgrad_nuscenes.yaml --transforms random_flip --root /work/scitas-share/datasets/Vita/civil-459/nuscenes_reid

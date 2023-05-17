@@ -1,0 +1,34 @@
+model:
+  name: 'osnet_x1_0'
+  pretrained: True
+
+data:
+  type: 'image'
+  sources: ['nuscenes_reid']
+  targets: ['nuscenes_reid']
+  combineall: False
+  transforms: ['random_flip']
+  save_dir: 'log/osnet_x1_0_nuscenes_softmax_singlelr'
+
+loss:
+  name: 'softmax'
+  softmax:
+    label_smooth: True
+
+train:
+  optim: 'amsgrad'
+  lr: 0.0015
+  max_epoch: 250
+  batch_size: 64
+  fixbase_epoch: 10
+  open_layers: ['classifier']
+  lr_scheduler: 'single_step'
+  stepsize: [60]
+
+test:
+  batch_size: 300
+  dist_metric: 'euclidean'
+  normalize_feature: False
+  evaluate: False
+  eval_freq: -1
+  rerank: False
