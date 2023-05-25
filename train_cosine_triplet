@@ -8,6 +8,11 @@
 #SBATCH --gres gpu:1
 #SBATCH --qos dlav
 #SBATCH --account civil-459-2023
-#SBATCH --reservation civil-459
+#SBATCH --time 72:00:00
 
-python scripts/main.py --config-file configs/im_osnet_x1_0_tripplet_cosine_amsgrad_nuscenes.yaml --transforms random_flip --root /work/scitas-share/datasets/Vita/civil-459/nuscenes_reid
+conda activate /home/william/anaconda3/envs/torchreid
+module load gcc/8.4.0-cuda cuda/11.6.2
+
+nvidia-smi
+
+anaconda3/envs/torchreid/bin/python deep-person-reid/scripts/main.py --config-file deep-person-reid/configs/im_osnet_x1_0_tripplet_cosine_amsgrad_nuscenes.yaml --transforms random_flip --root /work/scitas-share/datasets/Vita/civil-459/nuscenes_reid
