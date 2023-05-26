@@ -13,7 +13,7 @@ from ..dataset import ImageDataset
 
 
 class NuScenes_REID(ImageDataset):
-    dataset_dir = 'nuscenes_reid'
+    dataset_dir = 'nuscenes_reid2'
 
     def __init__(self, root='', **kwargs):
         self.root = osp.abspath(osp.expanduser(root))
