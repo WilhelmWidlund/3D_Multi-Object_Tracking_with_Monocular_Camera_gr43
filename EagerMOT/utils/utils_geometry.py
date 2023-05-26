@@ -6,6 +6,9 @@ import numpy as np
 from numba import njit
 from shapely.geometry import Polygon
 from scipy.spatial.transform import Rotation as R
+# ---------------- Altered code -------------------------
+from numpy.linalg import norm
+# ---------------- End altered code ---------------------
 
 import inputs.bbox as bbox
 from transform.transformation import Transformation, get_rotation_matrix_around_y
@@ -178,3 +181,11 @@ def tracking_distance_2d_full(coords_0: np.ndarray, coords_1: np.ndarray) -> flo
     assert angle_diff <= np.pi / 2, f"angle_diff {angle_diff}"
     cos_dist = 1 - np.cos(angle_diff)  # in [0, 1] since angle_diff in [0, pi/2]
     return dist * (1 + cos_dist)  # multiplier is in [1, 2]
+
+# --------------- Altered code --------------------------------------------------
+def cosine_similarity(feature_vector_0, feature_vector_1) -> float:
+    fv_0 = np.array(feature_vector_0)
+    fv_1 = np.array(feature_vector_1)
+    return np.dot(fv_0, fv_1) / (norm(fv_0) * norm(fv_1))
+# --------------- End altered code --------------------------------------------------
+

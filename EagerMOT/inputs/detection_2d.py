@@ -10,7 +10,7 @@ import utils.utils_geometry as utils_geometry
 from inputs.bbox import ProjectsToCam, Bbox2d
 # import inputs.bbox as inputs_bbox
 
-
+# ---------------- Altered code --------------------------------------------------
 class Detection2D(ProjectsToCam):
     def __init__(self,
                  bbox: Bbox2d,
@@ -18,6 +18,7 @@ class Detection2D(ProjectsToCam):
                  score: float,
                  seg_class_id: int,
                  *,
+                 feature_vector=None,
                  mask=None,
                  mask_decoded=None,
                  reid=None):
@@ -25,9 +26,11 @@ class Detection2D(ProjectsToCam):
         self.cam = cam
         self.score = score
         self.seg_class_id = seg_class_id
+        self.feature_vector = feature_vector
         self.mask = mask
         self.mask_decoded = mask_decoded
         self.reid = reid
+# ---------------- End altered code ----------------------------------------------
 
     def bbox_2d_in_cam(self, cam: str) -> Optional[Bbox2d]:
         return self.bbox if cam == self.cam else None

@@ -13,8 +13,42 @@ from utils import io
 from configs.params import TRAIN_SEQ, VAL_SEQ, TRACK_VAL_SEQ, build_params_dict, KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params
 from configs.local_variables import KITTI_WORK_DIR, SPLIT, NUSCENES_WORK_DIR, MOUNT_PATH
 import inputs.utils as input_utils
-from tracking.utils_association import get_bias_ratio
+from tracking.utils_concatenation import (get_bias_ratio, get_concatenation_source_folder_address)
 
+# TODO:
+    # 1. Setup a framework for taking in another re-identification matrix and fusing with the existing one
+    #
+#   # Elias:
+    #   1.1 Read the detections json file
+    #   1.2 ??? image recognition network does stuff ???
+    #   1.3 Store a json file with the exact same structure as the detections json file, but each detection now has
+    #       the feature vector as value in stead of the bbox stuff in the detections json file
+    #
+#   # Wilhelm:
+    #   1.1 Write a prompt thing for choosing inference json file path, if that option is chosen
+    #       DONE: if chosen, params['concatenate'] = [bool=True, str='folder_path', float=bias_ratio]
+    #             else, params['concatenate'] = [bool=False]
+    #
+    #   1.2 Whenever a detection is loaded from the detections json file, also augment it with its feature vector from
+    #       the inference json file.
+    #   1.3 Add some kinda list of detections_previously_matched_to_tracklet, that is augmented whenever... yeah
+    #       1.3.1 Figure out where exactly detection and tracklet are matched
+    #       1.3.2 Add the info (possibly requiring to find also the place a tracklet itself is created, to augment with
+    #                           the new data member)
+    #   1.4 When making the regular affinity matrix, also make one for the recognition network
+    #       1.4.1 Loop over active/existing tracklets, extracting the identity of previously-matched-with detections
+    #       1.4.2 Triple-loop over detections, tracklets and previous_detections thusly:
+    #               for detection, i in enumerate(detections_list):
+    #                   for tracklet, j in enumerate(tracklets_list):
+    #                       average_score_for_pair = 0
+    #                       for previous_detection in tracklet[previous_detections_list]:
+    #                           average_score_for_pair += score_function(detection, previous_detection)
+    #                       average_score_for_pair = average_score_for_pair / length(previous_detections_list)
+    #                       new_affinity_matrix[i, j] = average_score_for_pair
+    #
+    # 2. Evaluate the HOTA metric (time permitting...)
+    #   a) Implement it into the nuscenes-devkit
+    #   b) Find another given code that evaluates it on nuscenes datasets
 
 def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exclude=[], print_debug_info=True):
 
@@ -39,21 +73,19 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     total_unmatched_dets2d_second = 0
     # Record whether all sequences are skipped or not, for save purposes
     seq_tracked = False
-
-    # Ask if the user wants to concatenade the EagerMOT affinity matrix with one from elsewhere
+    # Store the extended project base address in params
+    params['base_folder_addr'] = dataset.work_dir.rsplit('/', 3)[0]
+    # Ask if the user wants to concatenade the EagerMOT affinity matrix with one based on another re-id method
     print("Would you like to concatenade the EagerMOT affinity matrix with one from elsewhere? [y/n]")
     savechoice = str(input())
     if savechoice in ['y', 'Y', 'yes', 'YES', 'Yes', '1']:
-        # TODO: Make it print something appropriate here once we have figured out how the other matrix is imported...
-        #       would be nice if it takes in a choice of like how/where to get the other one from, and based on the
-        #       choice calls some appropriate 'getter' function... that way someone else could extend the 'getter'
-        #       for easy customization... basically any reidentification method could thus be added simply.
-        print("Placeholder string")
-        params['concatenate'] = True
+        params['concatenate'] = [True]
+        # Get address to json file with feature vectors for all detections
+        params['concatenate'].append(get_concatenation_source_folder_address(params['base_folder_addr']))
         # Get bias ratio from user
-        params['concatenate_bias_ratio'] = get_bias_ratio()
+        params['concatenate'].append(get_bias_ratio())
     else:
-        params['concatenate'] = False
+        params['concatenate'] = [False]
 
     # ----------------- End altered code -----------------------------------------------------
 
@@ -65,7 +97,8 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
 
         print(f'Starting sequence: {sequence_name}')
         start_time = time.time()
-        sequence = dataset.get_sequence(SPLIT, sequence_name)
+        # TODO: Send params here
+        sequence = dataset.get_sequence(SPLIT, sequence_name, params['concatenate'])
         sequence.mot.set_track_manager_params(params)
         variant = variant_name_from_params(params)
         # TODO: 1. The path to assignment starts here, calling the perform_tracking_for_eval function in mot_sequence.py
@@ -111,30 +144,17 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         total_unmatched_tracks_second += run_info['unmatched_tracks_second_total']
         total_unmatched_dets2d_second += run_info['unmatched_dets2d_second_total']
         # ----------------- End altered code -----------------------------------------------------
-    
+
     if not seq_tracked:
         return variant, run_info
 
     # ------- Altered code -------------------------------------------------------------------------------
-    # Choose whether to save in the base project folder, or let the user input a sub-folder thereof
-    # Setup a file path to the project base folder
-    dirlist = folder_name.split('\\')
-    datasetpath = dirlist[0]
-    simplepathlist = datasetpath.split('/')
-    folder_name = ""
-    for i in range(len(simplepathlist) - 2):
-        folder_name += (simplepathlist[i] + "/")
-    print("Would you like to save the results in the default folder? [y/n]")
-    savechoice = str(input())
-    if not savechoice in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
-        print("Write a path to save the results in...")
-        # Take input from user to their folder of choice, staerting from project base folder
-        userpath = str(input(folder_name))
-        folder_name += userpath
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
+    # Get a path from user for where to save the results
+    save_folder_query = "Would you like to save the results in the default folder?"
+    save_folder_prompt = "Write a path to save the results in..."
+    save_path = input_utils.ask_if_default_folder(params['base_folder_addr'], save_folder_query, save_folder_prompt, True)
     # Save results
-    dataset.save_all_mot_results(folder_name)
+    dataset.save_all_mot_results(save_path)
     # ------- End altered code -------------------------------------------------------------------------------
 
     if not print_debug_info:
@@ -154,19 +174,8 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     print()
 
     # ------- Altered code -------------------------------------------------------------------------------
-    # All these total results were previously calculated based only on the last sequence, now they take all
+    # All these total results were previously calculated based only on the last processed sequence, now they take all
     # processed sequences into account.
-
-    # TODO:
-    # 1. Setup a framework for taking in another re-identification matrix and fusing (add? multiply? some kinda normalization?) with the existing one
-    #
-    #   2.2 Setup the basic framework there
-    #   2.3 Setup an extended framework, possibly elsewhere, giving the user a choice whether to do the whole fusion thing at all
-    #   2.4 ???
-    #   2.5 Profit
-    # 2. Evaluate the HOTA metric
-    #   a) Implement it into the nuscenes-devkit
-    #   b) Find another given code that evaluates it on nuscenes datasets
 
     # Fused instances stats
     if total_instances_any > 0:
@@ -177,7 +186,6 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         print(f"Total instances 2D only  : {total_instances_2d_only} " +
               f"-> {100.0 * total_instances_2d_only / total_instances_any:.2f}%")
         print()
-
 
     # Matching stats
     print(f"matched_tracks_first_total {total_matched_tracks_first}")
@@ -201,9 +209,9 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     final_unmatched_percentage = (total_unmatched_tracks_second / (
         total_matched_tracks_first + total_unmatched_tracks_first))
     print(f"percentage tracks unmatched after both stages {100.0 * final_unmatched_percentage:.2f}%")
-     # ------- End altered code -------------------------------------------------------------------------------
 
-    print(f"\n3D MOT saved in {folder_name}", end="\n\n")
+    print(f"\n3D MOT saved in {save_path}", end="\n\n")
+    # ------- End altered code -------------------------------------------------------------------------------
     return variant, run_info
 
 

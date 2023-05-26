@@ -97,8 +97,13 @@ def load_detections_2d_efficient_det(seq_name: str) -> Dict[str, Dict[str, List[
     return frames_cam_tokens_detections
 
 
-def load_detections_2d_mmdetection_nuscenes(seq_name: str) -> Dict[str, Dict[str, List[detection_2d.Detection2D]]]:
-    all_dets = utils.load_json_for_sequence(utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES, seq_name)
+# ------------------------- Altered code ---------------------------------------------------------------------
+def load_detections_2d_mmdetection_nuscenes(seq_name: str, modify_path: str = None) -> Dict[str, Dict[str, List[detection_2d.Detection2D]]]:
+    path = utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES
+    if modify_path == "TorchReID":
+        path = utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES_TORCHREID
+    all_dets = utils.load_json_for_sequence(path, seq_name)
+    # --------------------- End altered code ------------------------------------------------------------------
     frames_cam_tokens_detections: Dict[str, Dict[str, List[detection_2d.Detection2D]]
                                        ] = defaultdict(lambda: defaultdict(list))
 
@@ -113,10 +118,16 @@ def load_detections_2d_mmdetection_nuscenes(seq_name: str) -> Dict[str, Dict[str
 
                     bbox = inputs_bbox.Bbox2d(detection_data[0], detection_data[1], detection_data[2], detection_data[3])
                     score = float(detection_data[4])
-                    detection = detection_2d.Detection2D(bbox, "", score, class_id)
+                    # ----------- Altered code --------------------------------------------
+                    if modify_path == "TorchReID":
+                        det_feature_vector = detection_data[5][0]
+                        detection = detection_2d.Detection2D(bbox, "", score, class_id,
+                                                             feature_vector=det_feature_vector)
+                    else:
+                        detection = detection_2d.Detection2D(bbox, "", score, class_id)
+                    # ----------- End altered code ----------------------------------------
                     frames_cam_tokens_detections[frame_token][cam_data_token].append(detection)
     return frames_cam_tokens_detections
-
 
 def load_detections_2d_mmdetection_kitti(seq_name: str) -> Dict[str, Dict[str, List[detection_2d.Detection2D]]]:
     all_dets = utils.load_json_for_sequence(utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_KITTI, seq_name)

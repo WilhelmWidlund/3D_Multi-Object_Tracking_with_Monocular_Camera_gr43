@@ -90,13 +90,17 @@ def load_detections_2d_kitti_new(dets_2d_source: str, seq_name: str) -> Dict[str
     raise NotImplementedError
 
 
+# ----------------- Altered code --------------------------------------------------
 def load_detections_2d_nuscenes(dets_2d_source: str, seq_name: str) -> Dict[str, Dict[str, List[Detection2D]]]:
     """ Should return a dict mapping frame to each camera with its detections """
     if dets_2d_source == utils.EFFICIENT_DET:
         return detections_2d.load_detections_2d_efficient_det(seq_name)
     if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES:
         return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name)
+    if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES_TORCHREID:
+        return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name, "TorchReID")
     raise NotImplementedError
+# ----------------- End altered code ----------------------------------------------
 
 
 def load_annotations_kitti(seq_name: str) -> Dict[str, List[Bbox3d]]:

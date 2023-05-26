@@ -23,9 +23,13 @@ class Track(ProjectsToCam):
         """
         Initializes a tracker using initial bounding box.
         """
+        # It should be changed so that each time a Track object is created and/or updated,
+        # a check is made for feature vector in its instance.detection_d2.
+        # If there is one, then it should be appended to Track_object.feature_vector_history
         self.instance = instance
         self.is_angular = is_angular
         self.id = Track.count
+        self.feature_vector_history = []
         Track.count += 1
 
         self.age_total = 1
@@ -99,6 +103,12 @@ class Track(ProjectsToCam):
     def _update_2d_info(self, instance_from_mask: FusedInstance):
         # set mask, bbox_2d, etc. but keep 3D fields
         self.instance.set_with_instance_from_mask(instance_from_mask)
+        # ----------------- Altered code ----------------------------------------
+        # Update self with a new addition to self's history of feature vectors
+        if hasattr(instance_from_mask, 'detection_2d'):
+            if hasattr(instance_from_mask.detection_2d, 'feature_vector'):
+                self.feature_vector_history.append(instance_from_mask.detection_2d.feature_vector)
+        # ----------------- End altered code ------------------------------------
         self.time_since_2d_update = 0
 
     def reset_for_new_frame(self):

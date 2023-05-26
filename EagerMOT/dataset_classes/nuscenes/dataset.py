@@ -48,12 +48,18 @@ class MOTDatasetNuScenes(MOTDataset):
         self.assert_split_exists(split)
         return self.splits_to_scene_names[split]
 
-    def get_sequence(self, split: str, sequence_name: str) -> MOTSequenceNuScenes:  # overrides base method
+    # --------------- Altered code -------------------------------------------------------------
+    def get_sequence(self, split: str, sequence_name: str, concatenate_info: List) -> MOTSequenceNuScenes:  # overrides base method
         self.assert_sequence_in_split_exists(split, sequence_name)
-        split_dir = os.path.join(self.work_dir, split)
+        if concatenate_info[0]:
+            split_dir = os.path.join(concatenate_info[1], split)
+        else:
+            split_dir = os.path.join(self.work_dir, split)
         return MOTSequenceNuScenes(self.det_source, self.seg_source, split_dir, split,
                                    self.nusc, self.sequences_by_name[sequence_name],
                                    self.submission, self.detections_3d)
+
+    # --------------- End altered code ---------------------------------------------------------
 
     def save_all_mot_results(self, folder_name: str) -> None:  # overrides base method
         reporting.save_to_json_file(self.submission, folder_name, self.version)

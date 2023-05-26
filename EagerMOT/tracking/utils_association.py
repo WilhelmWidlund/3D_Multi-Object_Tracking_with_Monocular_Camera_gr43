@@ -48,39 +48,4 @@ def generic_similarity_matrix_two_args(list_0, list_1, attrs_0, attrs_1, similar
             matrix[i, j] = similarity_function(element_0, element_1, attrs_0[i], attrs_1[j])
     return matrix
 
-def unnormalize_matrix(matrix_0, matrix_1):
-    """
-    Un-normalize matrix_1 to have values in the same range as matrix_0
-    """
-    return matrix_1*np.max(np.absolute(matrix_0))
-
-def concatenate_matrices(matrix_0, matrix_1, bias_ratio=0.5):
-    """
-    Take in two matrices and concatenate them by elementwise addition.
-    First, matrix_1 is unnormalized to have values in the same range as matrix_0, then the concatenation is done:
-    conc_matrix[i, j] = matrix_0[i, j]*bias_ratio + matrix_1[i, j]*(1-bias_ratio)
-    Expects bias_ratio in the interval [0, 1], reverts to default value 0.5 if an invalid value is given
-    """
-    print(bias_ratio)
-    if not matrix_0.shape == matrix_1.shape:
-        # Non-matching matrix dimensions
-        print('The matrix dimensions are not the same!')
-        return matrix_0
-    matrix_1 = unnormalize_matrix(matrix_0, matrix_1)
-    return matrix_0*bias_ratio + matrix_1*(1-bias_ratio)
-
-def get_bias_ratio():
-    while True:
-        try:
-            print("Insert bias ratio in the range [0, 1]:")
-            bias = float(input())
-        except ValueError:
-            print("Please print a number.")
-            continue
-        else:
-            if(0 <= bias <= 1):
-                return bias
-            else:
-                print("Bias ratio outside of permitted range")
-                continue
 

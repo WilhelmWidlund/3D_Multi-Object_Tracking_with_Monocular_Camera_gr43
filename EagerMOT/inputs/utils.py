@@ -24,6 +24,9 @@ MOTSFUSION_TRACKRCNN = 'motsfusion_trackrcnn'
 MOTSFUSION_BEST = 'motsfusion_best'
 TRACKING_BEST = 'rrc_trackrcnn'
 MMDETECTION_CASCADE_NUIMAGES = 'mmdetection_cascade_nuimages'
+# ------------------ Altered code ------------------------------------
+MMDETECTION_CASCADE_NUIMAGES_TORCHREID = 'mmdetection_cascade_nuimages_TorchReID'
+# ------------------ End altered code --------------------------------
 
 # Edit paths to point to where you store 3D and 2D detections / segmentations on your machine
 POINTGNN_DETS_DIR = MOUNT_PATH + "/storage/pointgnn/" + SPLIT
@@ -38,6 +41,10 @@ DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES = MOUNT_PATH + \
     "/Detections/mmdetection_cascade_x101/" + SPLIT
 DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_KITTI = MOUNT_PATH + \
     "/storage/mmdetection_cascade_x101_kitti/" + SPLIT
+# ------------------ Altered code ------------------------------------
+DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES_TORCHREID = MOUNT_PATH + \
+    '/Embeddings/TorchReID/' + SPLIT
+# ------------------ End altered code --------------------------------
 
 ########################################3333
 
@@ -151,5 +158,20 @@ def load_json_for_sequence(folder_path: str, target_seq_name: str) -> Dict:
 
     print(f"Parsing {filepath}")
     with open(filepath, 'r') as f:
-        all_detections = json.load(f)
-    return all_detections
+        all_data = json.load(f)
+    return all_data
+
+def ask_if_default_folder(default_path: str, query: str, prompt: str, create: bool):
+    print(query + " [y/n]")
+    savechoice = str(input())
+    if savechoice not in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
+        print(prompt)
+        # Take input from user to their folder of choice, staerting from project base folder
+        userpath = str(input(default_path))
+        custom_folder_name = default_path + userpath
+        if create and not os.path.exists(custom_folder_name):
+            os.makedirs(custom_folder_name)
+        # return user chosen folder path
+        return custom_folder_name
+    else:
+        return default_path

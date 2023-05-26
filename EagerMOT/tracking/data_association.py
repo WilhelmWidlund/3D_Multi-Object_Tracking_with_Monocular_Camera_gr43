@@ -7,9 +7,10 @@ from scipy.optimize import linear_sum_assignment
 
 from inputs.bbox import Bbox2d, Bbox3d, ProjectsToCam
 from inputs.detection_2d import Detection2D
-from utils.utils_geometry import convert_bbox_coordinates_to_corners, box_2d_area
+from utils.utils_geometry import convert_bbox_coordinates_to_corners, box_2d_area, cosine_similarity
 from tracking.utils_association import (iou_bbox_2d_matrix, iou_bbox_3d_matrix, distance_2d_matrix,
-                                        distance_2d_dims_matrix, distance_2d_full_matrix, concatenate_matrices)
+                                        distance_2d_dims_matrix, distance_2d_full_matrix)
+from tracking.utils_concatenation import (generic_similarity_matrix, concatenate_matrices, get_feature_vectors)
 from tracking.tracks import Track
 from objects.fused_instance import FusedInstance
 
@@ -57,14 +58,16 @@ def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Map
     # Dimensions, layout etc. of matrix_3d_sim:
     #       matrix_3d_sim is a np.array with dimensions num_detections X num_tracklets,
     #       and in matrix_3d_sim[i, j] is the matching score for {detection_i, track_j}
-    # TODO: 1. (Elias) make the image recognition network deliver an affinity matrix with the same dimensions, layout etc.
-    # TODO: 2. Concatenate them
-    #       2.1 Figure out where to put 'concatenate' and 'concatenate_bias_ratio' into params
-    #           (probably in run_tracking.py since params comes along aaaaaaall the way from there...)
-    if params['concatenate'] == True:
-        matrix_visual_recog = np.zeros((len(detected_coordinates), len(track_coordinates)), dtype=np.float32)
-        # TODO: 2.2 Somehow fill the visual recognition matrix with the appropriate values...
-        matrix_3d_sim_test = concatenate_matrices(matrix_3d_sim, -matrix_visual_recog, params['concatenate_bias_ratio'])
+    # ------------ Altered code -----------------------------------------------------------
+    # Check if concatenating
+    if params['concatenate'][0]:
+        detections_feature_vectors, tracks_feature_vectors_histories = get_feature_vectors(detected_instances,
+                                                                                           tracks)
+        matrix_visual_recog = generic_similarity_matrix(detections_feature_vectors, tracks_feature_vectors_histories,
+                                                        cosine_similarity)
+        matrix_3d_sim = concatenate_matrices(-matrix_3d_sim, matrix_visual_recog, params['concatenate'][2])
+        matrix_3d_sim *= -1
+    # ------------ End altered code -------------------------------------------------------
 
     matched_indices, unmatched_det_ids, unmatched_track_ids = \
         perform_association_from_similarity(len(detected_instances), len(tracks), matrix_3d_sim)
