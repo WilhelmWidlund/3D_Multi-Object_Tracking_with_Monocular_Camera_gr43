@@ -44,7 +44,7 @@ class TrackManager(object):
         self.second_matching_method = params.get('second_matching_method', 'iou')
         self.leftover_thres = params.get('leftover_matching_thres')
         # --------------- Altered code -------------------------------------------------------------
-        self.concatenate_info = params['concatenate']
+        self.concatenate_info = params['augment']
         # --------------- End altered code ---------------------------------------------------------
 
     def update(self, fused_instances: Iterable[FusedInstance], params: Dict,
@@ -218,18 +218,6 @@ class TrackManager(object):
         # Report, remove obsolete tracks for all classes
         instances_tracked = self.report_tracks(ego_transform, angle_around_y)
         self.remove_obsolete_tracks()
-        # TODO: Idea: if a FusedInstance in instances_tracked has a detection_2d, then we could add the value of its
-        #  feature vector score to a list of feature vector scores for that FusedInstance. That way, it retains the
-        #  scores for all the detections it's been matched with... Then, they should be sent along, somehow, to the
-        #  place where affinity matrices are made...
-        """
-        for instance in instances_tracked:
-            if instance.bbox_2d:
-                try:
-                    instance.matched_feature_vectors.append(instance.feature_vector)
-                except:
-                    instance.matched_feature_vectors = [instance.feature_vector]
-        """
         return instances_tracked
 
     def report_tracks(self, ego_transform, angle_around_y):

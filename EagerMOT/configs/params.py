@@ -1,4 +1,5 @@
 from typing import Mapping, Any, Dict
+from configs.local_variables import MOUNT_PATH, VISUAL_SIM_NAME
 
 # KITTI splits
 # Object detection splits
@@ -9,6 +10,20 @@ TRACK_VAL_SEQ = ['0001', '0006', '0008', '0010', '0012', '0013', '0014', '0015',
 BOTH_VAL_SEQ = ['0001', '0002', '0006', '0007', '0008', '0010',
                 '0012', '0013', '0014', '0015', '0016', '0018', '0019']
 
+# ---------------- Altered code ----------------------------------------------------------------------------------------
+# Choose whether to use default settings for all options, making the entire tracking script automatic
+AUTOMATIC_INIT = False
+# Import instance creator functions for implemented augmentation methods
+from augmentation.visual_similarity_2d import create_child_object as vs2d_create_child_object
+# Add implemented augmentation methods to this dictionary as n: ["Name", create_child_object_function, "Description"]
+augmentation_methods = {'Type': "augmentation method",
+                        1: [VISUAL_SIM_NAME, vs2d_create_child_object,
+                            " 2D image recognition between detections and tracklets."]}
+# Default settings for augmentation
+default_folder = MOUNT_PATH + "/Embeddings/" + VISUAL_SIM_NAME + "/"
+default_settings = {"number": 1, "folder": default_folder, "bias ratio": 0.5, "n": None, "history function": 1,
+                    "similarity function": 1}
+# ---------------- End altered code ------------------------------------------------------------------------------------
 
 ###################################################################################
 # Alternative methods to match 3D tracks/detections in the first matching stage

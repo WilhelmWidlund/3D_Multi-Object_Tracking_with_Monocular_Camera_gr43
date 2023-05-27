@@ -49,10 +49,10 @@ class MOTDatasetNuScenes(MOTDataset):
         return self.splits_to_scene_names[split]
 
     # --------------- Altered code -------------------------------------------------------------
-    def get_sequence(self, split: str, sequence_name: str, concatenate_info: List) -> MOTSequenceNuScenes:  # overrides base method
+    def get_sequence(self, split: str, sequence_name: str, augment_info: List) -> MOTSequenceNuScenes:  # overrides base method
         self.assert_sequence_in_split_exists(split, sequence_name)
-        if concatenate_info[0]:
-            split_dir = os.path.join(concatenate_info[1], split)
+        if augment_info['Name']:
+            split_dir = os.path.join(augment_info['Folder'], split)
         else:
             split_dir = os.path.join(self.work_dir, split)
         return MOTSequenceNuScenes(self.det_source, self.seg_source, split_dir, split,

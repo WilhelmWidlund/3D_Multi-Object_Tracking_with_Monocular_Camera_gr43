@@ -7,10 +7,13 @@ from scipy.optimize import linear_sum_assignment
 
 from inputs.bbox import Bbox2d, Bbox3d, ProjectsToCam
 from inputs.detection_2d import Detection2D
-from utils.utils_geometry import convert_bbox_coordinates_to_corners, box_2d_area, cosine_similarity
+from utils.utils_geometry import convert_bbox_coordinates_to_corners, box_2d_area
 from tracking.utils_association import (iou_bbox_2d_matrix, iou_bbox_3d_matrix, distance_2d_matrix,
                                         distance_2d_dims_matrix, distance_2d_full_matrix)
-from tracking.utils_concatenation import (generic_similarity_matrix, concatenate_matrices, get_feature_vectors)
+# --------------- Altered code ------------------------------------------------------------------
+from augmentation.augmentation_base import (get_features)
+from augmentation.affinity_matrix_utils import (create_affinity_matrix, concatenate_matrices)
+# --------------- End altered code --------------------------------------------------------------
 from tracking.tracks import Track
 from objects.fused_instance import FusedInstance
 
@@ -51,21 +54,14 @@ def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Map
         detected_coordinates = [instance.bbox3d.kf_coordinates for instance in detected_instances]
         matrix_3d_sim = distance_2d_full_matrix(detected_coordinates, track_coordinates)
         matrix_3d_sim *= -1
-    # This is the best place to concatenate the affinity matrices. Here, matrix_3d_sim has the results from the EagerMOT
-    # method, so if we can get the corresponding affinity matrix from the visual recognition network here aswell, then
-    # that's it. So we need to...
-
-    # Dimensions, layout etc. of matrix_3d_sim:
-    #       matrix_3d_sim is a np.array with dimensions num_detections X num_tracklets,
-    #       and in matrix_3d_sim[i, j] is the matching score for {detection_i, track_j}
     # ------------ Altered code -----------------------------------------------------------
-    # Check if concatenating
-    if params['concatenate'][0]:
-        detections_feature_vectors, tracks_feature_vectors_histories = get_feature_vectors(detected_instances,
-                                                                                           tracks)
-        matrix_visual_recog = generic_similarity_matrix(detections_feature_vectors, tracks_feature_vectors_histories,
-                                                        cosine_similarity)
-        matrix_3d_sim = concatenate_matrices(-matrix_3d_sim, matrix_visual_recog, params['concatenate'][2])
+    # Check if augmenting
+    if params['augment'].name:
+        detections_feature_vectors, tracks_feature_vectors_histories = \
+                                                     params['augment'].get_features(detected_instances, tracks)
+        matrix_visual_recog = create_affinity_matrix(detections_feature_vectors, tracks_feature_vectors_histories,
+                                                     params['augment'])
+        matrix_3d_sim = concatenate_matrices(-matrix_3d_sim, matrix_visual_recog, params['augment'][2])
         matrix_3d_sim *= -1
     # ------------ End altered code -------------------------------------------------------
 

@@ -1,54 +1,15 @@
 import time
-from itertools import product
-from typing import List, Iterable, Mapping
-import os
+from typing import List, Iterable
 
 # for NuScenes eval
-from nuscenes.eval.common.config import config_factory
-from nuscenes.eval.tracking.evaluate import TrackingEval
 
 #import dataset_classes.kitti.mot_kitti as mot_kitti
 from dataset_classes.nuscenes.dataset import MOTDatasetNuScenes
-from utils import io
-from configs.params import TRAIN_SEQ, VAL_SEQ, TRACK_VAL_SEQ, build_params_dict, KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params
-from configs.local_variables import KITTI_WORK_DIR, SPLIT, NUSCENES_WORK_DIR, MOUNT_PATH
+from configs.params import KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params, AUTOMATIC_INIT
+from configs.local_variables import KITTI_WORK_DIR, SPLIT, NUSCENES_WORK_DIR
+from augmentation.augmentation_base import init_augment
 import inputs.utils as input_utils
-from tracking.utils_concatenation import (get_bias_ratio, get_concatenation_source_folder_address)
 
-# TODO:
-    # 1. Setup a framework for taking in another re-identification matrix and fusing with the existing one
-    #
-#   # Elias:
-    #   1.1 Read the detections json file
-    #   1.2 ??? image recognition network does stuff ???
-    #   1.3 Store a json file with the exact same structure as the detections json file, but each detection now has
-    #       the feature vector as value in stead of the bbox stuff in the detections json file
-    #
-#   # Wilhelm:
-    #   1.1 Write a prompt thing for choosing inference json file path, if that option is chosen
-    #       DONE: if chosen, params['concatenate'] = [bool=True, str='folder_path', float=bias_ratio]
-    #             else, params['concatenate'] = [bool=False]
-    #
-    #   1.2 Whenever a detection is loaded from the detections json file, also augment it with its feature vector from
-    #       the inference json file.
-    #   1.3 Add some kinda list of detections_previously_matched_to_tracklet, that is augmented whenever... yeah
-    #       1.3.1 Figure out where exactly detection and tracklet are matched
-    #       1.3.2 Add the info (possibly requiring to find also the place a tracklet itself is created, to augment with
-    #                           the new data member)
-    #   1.4 When making the regular affinity matrix, also make one for the recognition network
-    #       1.4.1 Loop over active/existing tracklets, extracting the identity of previously-matched-with detections
-    #       1.4.2 Triple-loop over detections, tracklets and previous_detections thusly:
-    #               for detection, i in enumerate(detections_list):
-    #                   for tracklet, j in enumerate(tracklets_list):
-    #                       average_score_for_pair = 0
-    #                       for previous_detection in tracklet[previous_detections_list]:
-    #                           average_score_for_pair += score_function(detection, previous_detection)
-    #                       average_score_for_pair = average_score_for_pair / length(previous_detections_list)
-    #                       new_affinity_matrix[i, j] = average_score_for_pair
-    #
-    # 2. Evaluate the HOTA metric (time permitting...)
-    #   a) Implement it into the nuscenes-devkit
-    #   b) Find another given code that evaluates it on nuscenes datasets
 
 def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exclude=[], print_debug_info=True):
 
@@ -76,19 +37,8 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     # Store the extended project base address in params
     params['base_folder_addr'] = dataset.work_dir.rsplit('/', 3)[0]
     # Ask if the user wants to concatenade the EagerMOT affinity matrix with one based on another re-id method
-    print("Would you like to concatenade the EagerMOT affinity matrix with one from elsewhere? [y/n]")
-    savechoice = str(input())
-    if savechoice in ['y', 'Y', 'yes', 'YES', 'Yes', '1']:
-        params['concatenate'] = [True]
-        # Get address to json file with feature vectors for all detections
-        params['concatenate'].append(get_concatenation_source_folder_address(params['base_folder_addr']))
-        # Get bias ratio from user
-        params['concatenate'].append(get_bias_ratio())
-    else:
-        params['concatenate'] = [False]
-
+    params["augment"] = init_augment(AUTOMATIC_INIT)
     # ----------------- End altered code -----------------------------------------------------
-
     for sequence_name in target_sequences:
         if len(sequences_to_exclude) > 0:
             if sequence_name in sequences_to_exclude:
@@ -97,8 +47,7 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
 
         print(f'Starting sequence: {sequence_name}')
         start_time = time.time()
-        # TODO: Send params here
-        sequence = dataset.get_sequence(SPLIT, sequence_name, params['concatenate'])
+        sequence = dataset.get_sequence(SPLIT, sequence_name, params['augment'])
         sequence.mot.set_track_manager_params(params)
         variant = variant_name_from_params(params)
         # TODO: 1. The path to assignment starts here, calling the perform_tracking_for_eval function in mot_sequence.py
@@ -152,7 +101,7 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     # Get a path from user for where to save the results
     save_folder_query = "Would you like to save the results in the default folder?"
     save_folder_prompt = "Write a path to save the results in..."
-    save_path = input_utils.ask_if_default_folder(params['base_folder_addr'], save_folder_query, save_folder_prompt, True)
+    save_path = get_generic_folder(params['base_folder_addr'], save_folder_query, save_folder_prompt, True)
     # Save results
     dataset.save_all_mot_results(save_path)
     # ------- End altered code -------------------------------------------------------------------------------

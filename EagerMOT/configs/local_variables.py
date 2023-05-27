@@ -8,3 +8,7 @@ KITTI_DATA_DIR = MOUNT_PATH + "/storage/slurm/osep/datasets/kitti"
 
 NUSCENES_WORK_DIR = MOUNT_PATH + "/DLAV_GuillaumeMOT/Workspaces/NuScenes"
 NUSCENES_DATA_DIR = MOUNT_PATH + "/Datasets/NuScenes/Mini"
+
+# -------------- Altered code ----------------------------------------------------------------
+VISUAL_SIM_NAME = "TorchReID"
+# -------------- End altered code ------------------------------------------------------------

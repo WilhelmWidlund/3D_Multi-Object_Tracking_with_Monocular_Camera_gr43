@@ -5,7 +5,7 @@ from typing import Optional, Mapping, Dict
 import numpy as np
 
 import inputs.utils_io_ab3dmot as ab3dmot_io
-from configs.local_variables import MOUNT_PATH, SPLIT
+from configs.local_variables import MOUNT_PATH, SPLIT, VISUAL_SIM_NAME
 from dataset_classes.nuscenes.classes import id_from_name as id_nuscenes_from_name
 from dataset_classes.kitti.classes import id_from_name as id_kitti_from_name
 
@@ -25,7 +25,7 @@ MOTSFUSION_BEST = 'motsfusion_best'
 TRACKING_BEST = 'rrc_trackrcnn'
 MMDETECTION_CASCADE_NUIMAGES = 'mmdetection_cascade_nuimages'
 # ------------------ Altered code ------------------------------------
-MMDETECTION_CASCADE_NUIMAGES_TORCHREID = 'mmdetection_cascade_nuimages_TorchReID'
+MMDETECTION_CASCADE_NUIMAGES_VISUAL_SIM_NAME = 'mmdetection_cascade_nuimages_' + VISUAL_SIM_NAME
 # ------------------ End altered code --------------------------------
 
 # Edit paths to point to where you store 3D and 2D detections / segmentations on your machine
@@ -160,18 +160,3 @@ def load_json_for_sequence(folder_path: str, target_seq_name: str) -> Dict:
     with open(filepath, 'r') as f:
         all_data = json.load(f)
     return all_data
-
-def ask_if_default_folder(default_path: str, query: str, prompt: str, create: bool):
-    print(query + " [y/n]")
-    savechoice = str(input())
-    if savechoice not in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
-        print(prompt)
-        # Take input from user to their folder of choice, staerting from project base folder
-        userpath = str(input(default_path))
-        custom_folder_name = default_path + userpath
-        if create and not os.path.exists(custom_folder_name):
-            os.makedirs(custom_folder_name)
-        # return user chosen folder path
-        return custom_folder_name
-    else:
-        return default_path

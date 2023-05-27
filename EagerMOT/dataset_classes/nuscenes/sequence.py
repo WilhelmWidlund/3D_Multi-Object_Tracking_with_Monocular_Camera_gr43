@@ -79,14 +79,14 @@ class MOTSequenceNuScenes(MOTSequence):
         return self.dataset_detections_3d
 
     def load_detections_2d(self) -> Dict[str, Dict[str, List[Detection2D]]]:
-        if self.mot.concatenate_info[0]:
+        # ------------- Altered code ---------------------------------------------------
+        if self.mot.augment_info['Name']:
             # Update seg_source for concatenation
             self.seg_source = self.seg_source + "_" + self.split_dir.rsplit('/')[-2]
+        # ------------- End altered code -----------------------------------------------
         frames_cam_tokens_detections = loading.load_detections_2d_nuscenes(self.seg_source, self.token)
         frames_cams_detections: Dict[str, Dict[str, List[Detection2D]]
                                      ] = defaultdict(lambda: defaultdict(list))
-                # TODO: Ändra så den tar en annan dictionary än default IFALL man försöker göra med concatenate...
-                #  Då vill vi också ha en ny nyckel feature_vector som får... värdet av feature vectorn...
         for frame_token, cam_detections in frames_cam_tokens_detections.items():
             for cam_data_token, detections in cam_detections.items():
                 cam = self.nusc.get('sample_data', cam_data_token)["channel"]

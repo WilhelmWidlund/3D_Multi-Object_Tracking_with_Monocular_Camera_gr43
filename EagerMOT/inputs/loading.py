@@ -9,7 +9,9 @@ import inputs.detections_2d as detections_2d
 import inputs.detections_3d as detections_3d
 from inputs.bbox import Bbox3d
 from inputs.detection_2d import Detection2D
-
+# -------------------- Altered code ----------------------
+from configs.local_variables import VISUAL_SIM_NAME
+# -------------------- End altered code ------------------
 
 def load_segmentations_trackrcnn(target_seq_name, classes_to_load=None):
     classes, scores, masks, boxes, reids = ([] for _ in range(5))
@@ -97,8 +99,8 @@ def load_detections_2d_nuscenes(dets_2d_source: str, seq_name: str) -> Dict[str,
         return detections_2d.load_detections_2d_efficient_det(seq_name)
     if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES:
         return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name)
-    if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES_TORCHREID:
-        return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name, "TorchReID")
+    if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES_VISUAL_SIM_NAME:
+        return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name, VISUAL_SIM_NAME)
     raise NotImplementedError
 # ----------------- End altered code ----------------------------------------------
 
