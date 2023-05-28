@@ -8,7 +8,7 @@ data:
   targets: ['nuscenes_reid']
   combineall: False
   transforms: ['random_flip']
-  save_dir: 'deep-person-reid/log/osnet_x1_0_nuscenes_softmax_cosinelr'
+  save_dir: 'log/osnet_x1_0_nuscenes_softmax_cosinelr'
 
 loss:
   name: 'softmax'

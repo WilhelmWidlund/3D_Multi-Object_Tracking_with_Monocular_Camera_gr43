@@ -11,7 +11,7 @@
 #SBATCH --time 72:00:00
 
 conda deactivate
-source /home/william/venv/torchreid2/bin/activate
+source /home/william/venv/torchreid2/bin/activate # CHANGE PATH HERE
 
 module load gcc/8.4.0-cuda cuda/11.6.2
 
@@ -20,4 +20,5 @@ which python
 nvcc -V
 python -V
 
-/home/william/venv/torchreid2/bin/python deep-person-reid/scripts/main.py --config-file deep-person-reid/configs/im_osnet_x1_0_softmax_single_amsgrad_nuscenes.yaml --transforms random_flip --root /work/scitas-share/datasets/Vita/civil-459/nuscenes_reid
+# CHANGE PATH HERE
+/home/william/venv/torchreid2/bin/python scripts/main.py --config-file configs/im_osnet_x1_0_softmax_single_amsgrad_nuscenes.yaml --transforms random_flip --root /work/scitas-share/datasets/Vita/civil-459/nuscenes_reid
