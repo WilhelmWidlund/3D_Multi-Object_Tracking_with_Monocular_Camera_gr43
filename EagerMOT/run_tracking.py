@@ -1,13 +1,18 @@
 import time
+import sys
 from typing import List, Iterable
 
 # for NuScenes eval
 
 #import dataset_classes.kitti.mot_kitti as mot_kitti
 from dataset_classes.nuscenes.dataset import MOTDatasetNuScenes
-from configs.params import KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params, AUTOMATIC_INIT
+from configs.params import KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params
 from configs.local_variables import KITTI_WORK_DIR, SPLIT, NUSCENES_WORK_DIR
+# ------------------ Altered code ----------------------------------------------------------------------
+from augmentation.augmentation_params import AUTOMATIC_INIT
 from augmentation.augmentation_base import init_augment
+from augmentation.augmentation_base_utils import get_generic_folder
+# ------------------ End altered code ------------------------------------------------------------------
 import inputs.utils as input_utils
 
 
@@ -36,8 +41,12 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
     seq_tracked = False
     # Store the extended project base address in params
     params['base_folder_addr'] = dataset.work_dir.rsplit('/', 3)[0]
-    # Ask if the user wants to concatenade the EagerMOT affinity matrix with one based on another re-id method
-    params["augment"] = init_augment(AUTOMATIC_INIT)
+    if params["autorun"]:
+        # Autorun with automatic augmentation setup
+        params["augment"] = init_augment(True, params['thresholds_per_class'])
+    else:
+        # Setup augmentation according to the choice in AUTOMATIC_INIT
+        params["augment"] = init_augment(AUTOMATIC_INIT, params['thresholds_per_class'])
     # ----------------- End altered code -----------------------------------------------------
     for sequence_name in target_sequences:
         if len(sequences_to_exclude) > 0:
@@ -98,12 +107,20 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         return variant, run_info
 
     # ------- Altered code -------------------------------------------------------------------------------
-    # Get a path from user for where to save the results
-    save_folder_query = "Would you like to save the results in the default folder?"
-    save_folder_prompt = "Write a path to save the results in..."
-    save_path = get_generic_folder(params['base_folder_addr'], save_folder_query, save_folder_prompt, True)
-    # Save results
-    dataset.save_all_mot_results(save_path)
+    # Get a path from user for where to save the results, if in manual mode
+    default_save_path = params['base_folder_addr'] + "/DLAV_GuillaumeMOT/"
+    if params["autorun"]:
+        save_path = default_save_path
+        dataset.save_all_mot_results(save_path)
+        params["augment"].save_augmentation_parameters(save_path)
+    else:
+        print("The default folder is " + default_save_path)
+        save_folder_query = "Would you like to save the results in the default folder?"
+        save_folder_prompt = "Write a path to save the results in..."
+        save_path = get_generic_folder(default_save_path, save_folder_query, save_folder_prompt, True)
+        # Save results
+        dataset.save_all_mot_results(save_path)
+        params["augment"].save_augmentation_parameters(save_path)
     # ------- End altered code -------------------------------------------------------------------------------
 
     if not print_debug_info:
@@ -175,8 +192,9 @@ def perform_tracking_with_params(dataset, params,
     return run_info
 
 
-def run_on_nuscenes():
+def run_on_nuscenes(autorun: bool):
     VERSION = "v1.0-mini"
+    NUSCENES_BEST_PARAMS["autorun"] = autorun
     mot_dataset = MOTDatasetNuScenes(work_dir=NUSCENES_WORK_DIR,
                                      det_source=input_utils.CENTER_POINT,
                                      seg_source=input_utils.MMDETECTION_CASCADE_NUIMAGES,
@@ -214,5 +232,13 @@ def run_on_kitti():
 
 
 if __name__ == "__main__":
-    run_on_nuscenes()
+    autorun = True
+    if len(sys.argv) > 1:
+        argmnt = str(sys.argv[1])
+        if str(sys.argv[1]) == "-manual":
+            autorun = False
+            print("Manual execution...\n======")
+    else:
+        print("Automatic execution...\n======")
+    run_on_nuscenes(autorun)
     # run_on_kitti()

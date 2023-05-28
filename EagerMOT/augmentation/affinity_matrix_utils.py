@@ -5,26 +5,20 @@ Utility functions for creating and manipulating affinity matrices
 import numpy as np
 
 
-def create_affinity_matrix(detections_features, tracklets_features, method_object):
+def create_affinity_matrix(detections_features, tracklets_features, method_object, class_target: int):
     """
     Create an affinity matrix based on the features of a set of detections and a set of tracklets
     Returns a matrix with detections at rows and tracklets at columns, with the element on row i, column j
     being the similarity score of detection i and tracklet j
+    The returned matrix is also adapted to the EagerMOT score range
     """
     matrix = np.zeros((len(detections_features), len(tracklets_features)), dtype=np.float32)
     for i, element_0 in enumerate(detections_features):
         for j, element_1 in enumerate(tracklets_features):
             matrix[i, j] = method_object.evaluate_score(element_0, element_1)
+    # Normalize scores to the EagerMOT range
+    matrix = method_object.get_map_ratio(class_target)*matrix
     return matrix
-
-
-def unnormalize_matrix(matrix_0, matrix_1):
-    """
-    Un-normalize matrix_1 to have values in the same range as matrix_0.
-    Necessary because EagerMOT uses values in some arbitrary range rather than normalized, and the EagerMOT limit values
-    are defined in relation to that arbitrary range.
-    """
-    return matrix_1*np.max(np.absolute(matrix_0))
 
 
 def concatenate_matrices(matrix_0, matrix_1, bias_ratio=0.5):
@@ -40,11 +34,11 @@ def concatenate_matrices(matrix_0, matrix_1, bias_ratio=0.5):
     if not matrix_0.shape == matrix_1.shape:
         # Non-matching matrix dimensions
         return matrix_0
-    matrix_1 = unnormalize_matrix(matrix_0, matrix_1)
+    #matrix_1 = unnormalize_matrix(matrix_0, matrix_1)
     dims = np.shape(matrix_0)
     conc_matrix = matrix_0.copy()
     for i in range(dims[0]):
         for j in range(dims[1]):
-            if matrix_1[i, j] > 0:
+            if matrix_1[i, j] < 0:
                 conc_matrix[i, j] = matrix_0[i, j]*bias_ratio + matrix_1[i, j]*(1-bias_ratio)
     return conc_matrix

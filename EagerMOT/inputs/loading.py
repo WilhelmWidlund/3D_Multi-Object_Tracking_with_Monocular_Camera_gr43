@@ -10,7 +10,7 @@ import inputs.detections_3d as detections_3d
 from inputs.bbox import Bbox3d
 from inputs.detection_2d import Detection2D
 # -------------------- Altered code ----------------------
-from configs.local_variables import VISUAL_SIM_NAME
+from augmentation.augmentation_params import VISUAL_SIM_NAME
 # -------------------- End altered code ------------------
 
 def load_segmentations_trackrcnn(target_seq_name, classes_to_load=None):

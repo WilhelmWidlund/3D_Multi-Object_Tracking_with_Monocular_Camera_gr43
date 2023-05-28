@@ -44,7 +44,7 @@ class TrackManager(object):
         self.second_matching_method = params.get('second_matching_method', 'iou')
         self.leftover_thres = params.get('leftover_matching_thres')
         # --------------- Altered code -------------------------------------------------------------
-        self.concatenate_info = params['augment']
+        self.augment = params['augment']
         # --------------- End altered code ---------------------------------------------------------
 
     def update(self, fused_instances: Iterable[FusedInstance], params: Dict,
@@ -88,9 +88,11 @@ class TrackManager(object):
             #          associate_instances_to_tracks_3d_iou function in data_association.py
             # print(f"Frame: {self.frame_count - 1}")
             # The 1st matching stage via 3D IoU
+            # Here, we have params.augment and params.thresholds_per_class AND class_target!!! Besides, params IS sent into the function here, so just add class_target!
+            # ----------------------- Altered code ---------------------------------------------------------------------
             matched_instances_to_tracks_first, unmatched_det_indices_first, unmatched_motion_track_indices_first = \
-                associate_instances_to_tracks_3d_iou(det_instances_3d, tracks_with_3d_models, params)
-
+                associate_instances_to_tracks_3d_iou(det_instances_3d, tracks_with_3d_models, params, class_target)
+            # ----------------------- End altered code -----------------------------------------------------------------
             # print(f'det_instances_3d: {len(det_instances_3d)}, predicted_3d_states: {len(predicted_3d_states)}, total tracks: {len(self.trackers)}')
             # print(f'matched_instances_to_tracks_first {len(matched_instances_to_tracks_first)}')
             # print(f'unmatched_det_indices_first {len(unmatched_det_indices_first)}')

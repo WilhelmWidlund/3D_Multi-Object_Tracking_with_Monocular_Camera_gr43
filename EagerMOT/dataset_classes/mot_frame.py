@@ -176,6 +176,7 @@ class MOTFrame(ABC):
 
         start_mot_ego = time.time()
         # TODO: 3. The path to assignment continues here, calling the update function in tracking_manager.py
+        # Here, we have params.augment and params.thresholds_per_class
         predicted_instances = self.sequence.mot.update(self.fused_instances, params, self.data, run_info,
                                                        ego_transform=ego_transform, angle_around_y=angle_around_y)
         run_info["total_time_mot"] += time.time() - start_mot_ego

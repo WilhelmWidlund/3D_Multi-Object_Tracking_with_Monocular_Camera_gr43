@@ -5,6 +5,7 @@ for instance TorchReID.
 
 import numpy as np
 from numpy.linalg import norm
+from augmentation.augmentation_base_utils import adapt_normalized_score
 
 
 def cosine_similarity(feature_vector_0, feature_vector_1) -> float:
@@ -13,17 +14,18 @@ def cosine_similarity(feature_vector_0, feature_vector_1) -> float:
     """
     fv_0 = np.array(feature_vector_0)
     fv_1 = np.array(feature_vector_1)
-    return (1 + np.dot(fv_0, fv_1) / (norm(fv_0) * norm(fv_1))) / 2
+    cos_sim_norm = (1 + np.dot(fv_0, fv_1) / (norm(fv_0) * norm(fv_1))) / 2
+    return adapt_normalized_score(cos_sim_norm)
 
 
-# Once implemented, score functions should be added in this dictionary
-score_functions = {'Type': "score function",
-                   1: ["Cosine similarity score", cosine_similarity]}
+# Once implemented, similarity functions should be added in this dictionary
+similarity_functions = {'Type': "similarity function",
+                   1: ["Cosine similarity score", False, cosine_similarity]}
 
 
 def history_equal_weight(element_0, element_1, similarity_function, n):
     """
-    Similarity score method for assigning equal weight to all feature vectors in the tracklet history
+    History method for assigning equal weight to all feature vectors in the tracklet history
     """
     score = 0
     for k in range(len(element_1)):
@@ -33,7 +35,7 @@ def history_equal_weight(element_0, element_1, similarity_function, n):
 
 def history_n_last_equal_weight(element_0, element_1, similarity_function, n):
     """
-        Similarity score method for assigning equal weight to the n most recent feature vectors in the tracklet history,
+        History method for assigning equal weight to the n most recent feature vectors in the tracklet history,
         or to all if all < n
     """
     score = 0
@@ -47,7 +49,7 @@ def history_n_last_equal_weight(element_0, element_1, similarity_function, n):
 
 def history_n_last_diff_weights(element_0, element_1, similarity_function, n):
     """
-        Similarity score method for assigning different weights the n most recent feature vectors
+        History method for assigning different weights the n most recent feature vectors
         in the tracklet history, or to all if all < n
         Assigns 50% weight to the most recent, 25% to the second-most, 12.5% to the third-most, etc.
         until the n-th-most, which receives the remaining weight
@@ -68,24 +70,24 @@ def history_n_last_diff_weights(element_0, element_1, similarity_function, n):
 
 def history_last_only(element_0, element_1, similarity_function, n):
     """
-    Similarity function for only regarding the most recent feature vector in the tracklet history
+    History method for only regarding the most recent feature vector in the tracklet history
     """
     return similarity_function(element_0, element_1[-1])
 
 
 # Once implemented, history methods should be added in this dictionary
 history_functions = {'Type': "method for handling the feature vector history of a tracklet",
-                     1: ["Equal weight for all feature vectors",
+                     1: ["Equal weight for all feature vectors", False,
                          history_equal_weight],
-                     2: ["Equal weight for the n most recent feature vectors",
+                     2: ["Equal weight for the n most recent feature vectors", False,
                          history_n_last_equal_weight],
-                     3: ["The n most recent feature vectors, with weight 1/2, 1/4, 1/8 etc",
+                     3: ["The n most recent feature vectors, with weight 1/2, 1/4, 1/8 etc", False,
                          history_n_last_diff_weights],
-                     4: ["Only consider the most recent feature vector",
+                     4: ["Only consider the most recent feature vector", False,
                          history_last_only]}
 
 
-def get_n():
+def setup_n():
     print("Input the desired number n >= 1.")
     while True:
         try:

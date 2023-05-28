@@ -60,9 +60,12 @@ class MOTSequence(ABC):
         if mot_3d_file is None:
             # ------- Altered code -------------------------------------------------------------------------------
             # When results already exist for a sequence, ask whether to overwrite or skip that sequence
-            print(f'Sequence {self.name} already has results. Overwrite? [y/n]')
             start_pause_time = time.time()
-            decision = str(input())
+            if params["autorun"]:
+                decision = 'y'
+            else:
+                print(f'Sequence {self.name} already has results. Overwrite? [y/n]')
+                decision = str(input())
             run_info["pause_time"] = time.time() - start_pause_time
             if decision in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'overwrite', 'OVERWRITE', 'Overwrite']:
                 print(f'Deleting old results...')

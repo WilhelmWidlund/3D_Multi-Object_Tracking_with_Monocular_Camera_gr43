@@ -80,7 +80,7 @@ class MOTSequenceNuScenes(MOTSequence):
 
     def load_detections_2d(self) -> Dict[str, Dict[str, List[Detection2D]]]:
         # ------------- Altered code ---------------------------------------------------
-        if self.mot.augment_info['Name']:
+        if self.mot.augment.get_name():
             # Update seg_source for concatenation
             self.seg_source = self.seg_source + "_" + self.split_dir.rsplit('/')[-2]
         # ------------- End altered code -----------------------------------------------

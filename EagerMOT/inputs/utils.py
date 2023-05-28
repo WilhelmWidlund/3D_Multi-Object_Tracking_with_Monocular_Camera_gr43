@@ -5,7 +5,8 @@ from typing import Optional, Mapping, Dict
 import numpy as np
 
 import inputs.utils_io_ab3dmot as ab3dmot_io
-from configs.local_variables import MOUNT_PATH, SPLIT, VISUAL_SIM_NAME
+from configs.local_variables import MOUNT_PATH, SPLIT
+from augmentation.augmentation_params import VISUAL_SIM_NAME
 from dataset_classes.nuscenes.classes import id_from_name as id_nuscenes_from_name
 from dataset_classes.kitti.classes import id_from_name as id_kitti_from_name
 

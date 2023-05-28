@@ -11,7 +11,6 @@ from utils.utils_geometry import convert_bbox_coordinates_to_corners, box_2d_are
 from tracking.utils_association import (iou_bbox_2d_matrix, iou_bbox_3d_matrix, distance_2d_matrix,
                                         distance_2d_dims_matrix, distance_2d_full_matrix)
 # --------------- Altered code ------------------------------------------------------------------
-from augmentation.augmentation_base import (get_features)
 from augmentation.affinity_matrix_utils import (create_affinity_matrix, concatenate_matrices)
 # --------------- End altered code --------------------------------------------------------------
 from tracking.tracks import Track
@@ -21,11 +20,13 @@ from objects.fused_instance import FusedInstance
 CamDetectionIndices = Tuple[str, int]
 
 
-def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Mapping):
+# ------------------ Altered code --------------------------------------------------------------------------------------
+def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Mapping, class_target: int):
     """
     Assigns detected_objects to tracked objects
     Returns 3 lists of matches, unmatched_detections and unmatched_trackers
     """
+# ------------------ End altered code ----------------------------------------------------------------------------------
     if len(tracks) == 0:  # original association
         return np.empty((0, 2), dtype=int), list(range(len(detected_instances))), []
     if len(detected_instances) == 0:  # nothing detected in the current frame
@@ -56,15 +57,18 @@ def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Map
         matrix_3d_sim *= -1
     # ------------ Altered code -----------------------------------------------------------
     # Check if augmenting
-    if params['augment'].name:
+    if params['augment'].get_name():
+        # Extract features
         detections_feature_vectors, tracks_feature_vectors_histories = \
                                                      params['augment'].get_features(detected_instances, tracks)
+        # Create affinity matrix
         matrix_visual_recog = create_affinity_matrix(detections_feature_vectors, tracks_feature_vectors_histories,
-                                                     params['augment'])
-        matrix_3d_sim = concatenate_matrices(-matrix_3d_sim, matrix_visual_recog, params['augment'][2])
-        matrix_3d_sim *= -1
+                                                     params['augment'], class_target)
+        # Concatenate matrices
+        matrix_3d_sim = concatenate_matrices(matrix_3d_sim, matrix_visual_recog, params['augment'].get_bias_ratio())
+        # Adjust sign to EagerMOT convention
+        #matrix_3d_sim *= -1
     # ------------ End altered code -------------------------------------------------------
-
     matched_indices, unmatched_det_ids, unmatched_track_ids = \
         perform_association_from_similarity(len(detected_instances), len(tracks), matrix_3d_sim)
     return filter_matches(matched_indices, unmatched_det_ids, unmatched_track_ids, matrix_3d_sim, params["iou_3d_threshold"],

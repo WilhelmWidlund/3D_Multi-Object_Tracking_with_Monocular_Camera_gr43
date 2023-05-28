@@ -51,8 +51,8 @@ class MOTDatasetNuScenes(MOTDataset):
     # --------------- Altered code -------------------------------------------------------------
     def get_sequence(self, split: str, sequence_name: str, augment_info: List) -> MOTSequenceNuScenes:  # overrides base method
         self.assert_sequence_in_split_exists(split, sequence_name)
-        if augment_info['Name']:
-            split_dir = os.path.join(augment_info['Folder'], split)
+        if augment_info.get_name():
+            split_dir = os.path.join(augment_info.get_folder(), split)
         else:
             split_dir = os.path.join(self.work_dir, split)
         return MOTSequenceNuScenes(self.det_source, self.seg_source, split_dir, split,
