@@ -34,32 +34,48 @@ There are also alot more models trained on other datsasets at Torchreid modelzoo
 
 Recreate training on SCITAS GPU cluster
 ---------------
-Connect to the cluster with :
+Connect to the cluster with.
+
 .. code-block:: bash
     ssh -X GASPAR-username@izar.epfl.ch
-Open your private folder:
+
+Open your private folder.
+
 .. code-block:: bash
     cd home/last-name
-Load python 3.7 and cuda 11.6:
+
+Load python 3.7 and cuda 11.6.
+
 .. code-block:: bash
     module load gcc/8.4.0-cuda python/3.7.7 cuda/11.6.2
-Create a python virtual enviroment:
+
+Create a python virtual enviroment.
+
 .. code-block:: bash
     python3 -m venv venv/torchreid
-Enter enviroment:
+
+Enter enviroment.
+
 .. code-block:: bash
     source venv/torchreid/bin/activate
-Clone the repository:
+
+Clone the repository.
+
 .. code-block:: bash
     git clone git@github.com:EliasWilliamGit/deep-person-reid.git
     cd deep-person-reid
 
-Install dependencies
+Install dependencies.
+
 .. code-block:: bash
     python3 -m pip install -r requirements.txt
-Install pytorch version 1.13.1 with cuda:
+
+Install pytorch version 1.13.1 with cuda.
+
 .. code-block:: bash
     python3 -m pip install torch==1.13.1+rocm5.2 torchvision torchaudio
+
+
 In the training file you want to run, ex. train_cosine_softmax, change the path to your home directory
 
 The two slurm files for our two models can also be viewed in the repository, it shows how good the training went.
