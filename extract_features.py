@@ -58,12 +58,8 @@ def main(args):
     else:
         current_device = 'cpu'
 
-    model_name_full = args.model_path.split("/")[-1]
-    model_name_list = model_name_full.split("_")[0:3]
-    model_name = "_".join(model_name_list)
-
     extractor = FeatureExtractor(
-        model_name=model_name,
+        model_name=args.model_name,
         model_path=args.model_path,
         device=current_device,
         verbose=True
@@ -136,7 +132,7 @@ def main(args):
                     print('So lets skip it for now')
                     continue
 
-                # Load the frame
+                # Load the frame, this is the real slow part of the script, could be optimized
                 frame = cv.imread(os.path.join(dataset_root_path, sample_data_frame['filename']))
 
                 # Loop over all classes in the frame
@@ -163,7 +159,7 @@ def main(args):
 
         # Save dictionary as JSON file
         save_root = args.save_path
-        save_file_name = scene_token + '_' + model_name +'.json'
+        save_file_name = scene_token + '_' + args.model_name +'.json'
         print(os.path.join(save_root, save_file_name ))
 
         json_obj = json.dumps(detections_with_features)
@@ -179,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_path', default="embeddings", type=str, help="Where to save the JSON files containing embeddings")
     parser.add_argument('--conversion_folder_name', default="v1.0-mini", type=str, help="Name of folder containing token conversions JSON files for the scenes. This folder should be in the same folder as the dataset.")
     parser.add_argument('--model_path', default='log/modelzoo/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth', type=str, help="Path to the model creating embeddings")
+    parser.add_argument('--model_name', default="osnet_x1_0", type=str, help="Name of the model used for feature extraction")
     parser.add_argument('--detection_name_ending', default="trainval_cascade_mask_rcnn_x101", type=str, help="The detection files often has an ending of the name of the model used for it. Put this ending here")
     args = parser.parse_args()
     main(args)

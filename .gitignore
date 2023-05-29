@@ -135,6 +135,7 @@ dmypy.json
 
 # ReID
 embeddings/*
+embeddings_triplet/*
 detections/*
 reid-data/
 log/
