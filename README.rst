@@ -23,9 +23,10 @@ Clone the repository:
 
 Run feature extraction
 ---------------
-Run the script extract_features.py from the terminal. Specify path to dataset and detections. For all arguments take a closer look at the script. And example run can be seen below.
+Run the script extract_features.py from the terminal. Specify path to dataset and detections. For all arguments take a closer look at the script. An example run can be seen below.
 
 .. code-block:: bash
+
     python extract_features.py --dataset_path C:\Users\Elias\OneDrive\Dokument\LIU\Outgoing\Courses\CIVIL-459\EagerMOT\NuScenes --model_path log\osnet_x1_0_nuscenes_softmax_cosinelr\model\model.pth
 
 The embeddings will be saved in the folder --save_path argument.
