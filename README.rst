@@ -14,8 +14,11 @@ To be able to run this extraction script you need two things:
 Installation for feature extraction
 ---------------
 - Clone the repository:
+
 .. code-block:: bash
+
     git clone git@github.com:EliasWilliamGit/deep-person-reid.git
+    
 - Please see the original Torchreid github for how to install dependencies in a conda enviroment https://github.com/KaiyangZhou/deep-person-reid.
 
 Run feature extraction
