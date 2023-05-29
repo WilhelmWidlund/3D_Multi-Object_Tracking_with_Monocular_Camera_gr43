@@ -24,9 +24,11 @@ Clone the repository:
 Run feature extraction
 ---------------
 Run the script extract_features.py from the terminal. Specify path to dataset and detections. For all arguments take a closer look at the script. And example run can be seen below.
+
 .. code-block:: bash
     python extract_features.py --dataset_path C:\Users\Elias\OneDrive\Dokument\LIU\Outgoing\Courses\CIVIL-459\EagerMOT\NuScenes --model_path log\osnet_x1_0_nuscenes_softmax_cosinelr\model\model.pth
-- The embeddings will be saved in the folder --save_path argument.
+
+The embeddings will be saved in the folder --save_path argument.
 
 Two trained models on the NuScenes REID dataset is available at https://drive.google.com/drive/folders/1BYgqf6inddm64rKKsxZrkx3DGKotaCQn?usp=sharing.
 These models where first pretrained in ImageNet and then trained on Nuscenes REID dataset.
@@ -34,45 +36,32 @@ There are also alot more models trained on other datsasets at Torchreid modelzoo
 
 Recreate training on SCITAS GPU cluster
 ---------------
-Connect to the cluster with.
 
 .. code-block:: bash
+
+    #Connect to the cluster with
     ssh -X GASPAR-username@izar.epfl.ch
-
-Open your private folder.
-
-.. code-block:: bash
+    
+    #Open your private folder
     cd home/last-name
 
-Load python 3.7 and cuda 11.6.
-
-.. code-block:: bash
+    #Load python 3.7 and cuda 11.6.
     module load gcc/8.4.0-cuda python/3.7.7 cuda/11.6.2
 
-Create a python virtual enviroment.
-
-.. code-block:: bash
+    #Create a python virtual enviroment.
     python3 -m venv venv/torchreid
 
-Enter enviroment.
-
-.. code-block:: bash
+    #Enter enviroment.
     source venv/torchreid/bin/activate
 
-Clone the repository.
-
-.. code-block:: bash
+    #Clone the repository.
     git clone git@github.com:EliasWilliamGit/deep-person-reid.git
     cd deep-person-reid
 
-Install dependencies.
-
-.. code-block:: bash
+    #Install dependencies.
     python3 -m pip install -r requirements.txt
 
-Install pytorch version 1.13.1 with cuda.
-
-.. code-block:: bash
+    #Install pytorch version 1.13.1 with cuda.
     python3 -m pip install torch==1.13.1+rocm5.2 torchvision torchaudio
 
 
