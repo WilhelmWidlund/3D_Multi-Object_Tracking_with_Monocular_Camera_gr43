@@ -134,11 +134,10 @@ dmypy.json
 ._*
 
 # ReID
-embeddings/*
-embeddings_triplet/*
-detections/*
-reid-data/
-log/
-saved-models/
-model-zoo/
-debug*
+Datasets/*
+Detections/*
+DeepPersonReID/reid-data/
+DeepPersonReID/log/
+DeepPersonReID/saved-models/
+DeepPersonReID/model-zoo/
+DeepPersonReID/debug*

@@ -1,0 +1,20 @@
+1. Run tracking
+	Open terminal and enter
+	* conda activate DLAV_env
+	* cd <yourpath>/DLAV/DLAV_GuillaumeMOT/EagerMOT
+	* python run_tracking.py
+	For automatic execution:
+		* python run_tracking.py
+   	For manual execution:
+		* python run_tracking.py -manual
+		Follow prompts in the terminal as tracking progresses. Specifically, it is recommended to
+		OVERWRITE results if asked, and SAVE in default folder
+
+2. Run evaluation
+	Open terminal and enter
+		* conda activate nuscenes
+		* cd <yourpath>/DLAV
+   	For automatic execution:
+		* python nuscenes-devkit/python-sdk\nuscenes\eval\tracking\evaluate.py
+   	For manual execution:
+		* python nuscenes-devkit/python-sdk\nuscenes\eval\tracking\evaluate.py -manual
