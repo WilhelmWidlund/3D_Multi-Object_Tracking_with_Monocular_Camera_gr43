@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 import os
 import argparse
 import torch
+import os.path as osp
 
 def main(args):
     """
@@ -157,8 +158,10 @@ def main(args):
             sample_token = next_sample_token
             
 
+        detect_folder_name = args.detections_path.split('/')[-1]
+
         # Save dictionary as JSON file
-        save_root = args.save_path
+        save_root = os.path.join(args.save_path,detect_folder_name)
         save_file_name = scene_token + '_' + args.model_name +'.json'
         print(os.path.join(save_root, save_file_name ))
 
@@ -169,12 +172,19 @@ def main(args):
 
 if __name__ == "__main__":
     # Arguments defintions
+    root = osp.abspath(osp.expanduser(""))
+    # Check in which folder the user is currently, this to be able to run script from inside folder or outside
+    root_list = root.split("\\")
+    if root_list[-1] == "DeepPersonReID":
+        # Remove it from root
+        root = "\\".join(root_list[:-1])
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--detections_path', default="detections/mmdetection_cascade_x101/val", type=str, help="Path to the 2D detections JSON files for the dataset")
-    parser.add_argument('--dataset_path', default="dataset/NuScenes", type=str, help="Path to the dataset containing frame images")
-    parser.add_argument('--save_path', default="embeddings", type=str, help="Where to save the JSON files containing embeddings")
+    parser.add_argument('--detections_path', default=os.path.join(root, "Detections/mmdetection_cascade_x101/mini_val"), type=str, help="Path to the 2D detections JSON files for the dataset")
+    parser.add_argument('--dataset_path', default=os.path.join(root,"Datasets/NuScenes/mini"), type=str, help="Path to the dataset containing frame images")
+    parser.add_argument('--save_path', default=os.path.join(root,"Embeddings/TorchREID"), type=str, help="Where to save the JSON files containing embeddings")
     parser.add_argument('--conversion_folder_name', default="v1.0-mini", type=str, help="Name of folder containing token conversions JSON files for the scenes. This folder should be in the same folder as the dataset.")
-    parser.add_argument('--model_path', default='log/modelzoo/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth', type=str, help="Path to the model creating embeddings")
+    parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/modelzoo/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth'), type=str, help="Path to the model creating embeddings")
     parser.add_argument('--model_name', default="osnet_x1_0", type=str, help="Name of the model used for feature extraction")
     parser.add_argument('--detection_name_ending', default="trainval_cascade_mask_rcnn_x101", type=str, help="The detection files often has an ending of the name of the model used for it. Put this ending here")
     args = parser.parse_args()
