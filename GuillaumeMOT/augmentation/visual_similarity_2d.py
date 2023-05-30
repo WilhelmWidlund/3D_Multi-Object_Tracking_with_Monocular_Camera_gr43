@@ -91,11 +91,11 @@ class AugMet_Vis_Sim_2D(AugmentationMethod):
         else:
             return -1
 
-    def save_augmentation_parameters(self, save_path: str, file_name: str):
-        params_to_write = {"Hyperparameters": {"Bias ratio": self.bias_ratio,
-                                               "Similarity function": self.similarity_name,
-                                               "History function": self.history_name,
-                                               "n": self.n},
+    def save_augmentation_parameters(self, save_path: str):
+        params_to_write = {"Augmentation hyperparameters": {"Bias ratio": self.bias_ratio,
+                                                            "Similarity function": self.similarity_name,
+                                                            "History function": self.history_name,
+                                                            "n": self.n},
                            "Class thresholds": {"Car": VIS_SIM_2D_THRESHOLDS[1],
                                                 "Pedestrian": VIS_SIM_2D_THRESHOLDS[2],
                                                 "Bicycle": VIS_SIM_2D_THRESHOLDS[3],

@@ -109,7 +109,7 @@ class AugmentationMethod(ABC):
 
 
     @abstractmethod
-    def save_augmentation_parameters(self, save_path: str, file_name: str):
+    def save_augmentation_parameters(self, save_path: str):
         raise NotImplementedError("The child class must override save_augmentation_parameters!")
 
     @abstractmethod
@@ -136,8 +136,8 @@ class DoNotAugment(AugmentationMethod):
     def setup_map_ratio(self, eagermot_thresholds: dict):
         return eagermot_thresholds
 
-    def save_augmentation_parameters(self, save_path: str, file_name: str):
-        params_to_write = {"None": None}
+    def save_augmentation_parameters(self, save_path: str):
+        params_to_write = {"Augmentation parameters": "None"}
         utils_aug.save_to_json(params_to_write, save_path, "No_augmentation_used")
 
     def get_name(self):

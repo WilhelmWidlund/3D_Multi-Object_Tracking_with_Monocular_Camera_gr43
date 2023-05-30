@@ -135,9 +135,11 @@ dmypy.json
 
 # ReID
 Datasets/*
+!Detections/.gitkeep
 Detections/*
 DeepPersonReID/reid-data/
 DeepPersonReID/log/
 DeepPersonReID/saved-models/
 DeepPersonReID/model-zoo/
 DeepPersonReID/debug*
+
