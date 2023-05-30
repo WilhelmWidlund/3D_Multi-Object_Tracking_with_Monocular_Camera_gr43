@@ -95,11 +95,13 @@ def load_detections_2d_kitti_new(dets_2d_source: str, seq_name: str) -> Dict[str
 # ----------------- Altered code --------------------------------------------------
 def load_detections_2d_nuscenes(dets_2d_source: str, seq_name: str) -> Dict[str, Dict[str, List[Detection2D]]]:
     """ Should return a dict mapping frame to each camera with its detections """
+    print(f"It is {dets_2d_source}")
+    print(f"We want {utils.MMDETECTION_CASCADE_NUIMAGES_VISUAL_SIM_NAME}")
     if dets_2d_source == utils.EFFICIENT_DET:
         return detections_2d.load_detections_2d_efficient_det(seq_name)
     if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES:
         return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name)
-    if dets_2d_source == utils.MMDETECTION_CASCADE_NUIMAGES_VISUAL_SIM_NAME:
+    if dets_2d_source == VISUAL_SIM_NAME:
         return detections_2d.load_detections_2d_mmdetection_nuscenes(seq_name, VISUAL_SIM_NAME)
     raise NotImplementedError
 # ----------------- End altered code ----------------------------------------------

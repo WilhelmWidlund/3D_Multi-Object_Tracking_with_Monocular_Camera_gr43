@@ -2,7 +2,7 @@
 Parameters and variables for implemented augmentation methods
 """
 
-from configs.local_variables import MOUNT_PATH
+from configs.local_variables import MOUNT_PATH, SPLIT
 
 # Name of the implemented visual_similarity_2d method
 VISUAL_SIM_NAME = "TorchReID"

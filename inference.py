@@ -20,8 +20,14 @@ from GuillaumeMOT.configs.local_variables import MOUNT_PATH
 
 
 if __name__ == "__main__":
+    # Setup conda environment names
+    CNN_env_name = "torchreid"
+    GuillaumeMOT_env_name = "DLAV_env"
+    NuScenes_DevKit_env_name = "nuscenes"
+
     # Setup paths
-    torchreid_feature_extraction = MOUNT_PATH + "/DeepPersonReID/extract_features.py"
+    model_path = MOUNT_PATH + "/DeepPersonReID/log/osnet_x1_0_nuscenes_tripplet_cosinelr\model\model.pth.tar-250"
+    torchreid_feature_extraction = MOUNT_PATH + "/DeepPersonReID/extract_features.py --model_path " + model_path
     guillaumemot_tracking = MOUNT_PATH + "/GuillaumeMOT/run_tracking.py"
     nuscenes_evaluate_metrics = MOUNT_PATH + "/nuscenes-devkit/python-sdk/nuscenes/eval/tracking/evaluate.py --combined"
 
@@ -29,16 +35,15 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         argmnts = str(sys.argv)
 
-
     # Activate TorchReID conda environment and run TorchReID
-    #subprocess.run(f"conda activate torchreid && python {torchreid_feature_extraction} && conda deactivate",
-    #               shell=True)
+    subprocess.run(f"conda activate {CNN_env_name} && python {torchreid_feature_extraction} && conda deactivate",
+                   shell=True)
 
     # Activate GuillaumeMOT conda environment and run GuillaumeMOT
-    subprocess.run(f"conda activate DLAV_env && python {guillaumemot_tracking} && conda deactivate",
+    subprocess.run(f"conda activate {GuillaumeMOT_env_name} && python {guillaumemot_tracking} && conda deactivate",
                    shell=True)
 
     # Activate NuScenes-DevKit conda environment and run evaluation
     if "-eval" in argmnts:
-        subprocess.run(f"conda activate nuscenes && python {nuscenes_evaluate_metrics} && conda deactivate",
-                       shell=True)
+        subprocess.run(f"conda activate {NuScenes_DevKit_env_name} && python {nuscenes_evaluate_metrics} "
+                       f"&& conda deactivate", shell=True)

@@ -58,7 +58,6 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
         sequence = dataset.get_sequence(local_vars.SPLIT, sequence_name, params['augment'])
         sequence.mot.set_track_manager_params(params)
         variant = variant_name_from_params(params)
-        # TODO: 1. The path to assignment starts here, calling the perform_tracking_for_eval function in mot_sequence.py
         run_info = sequence.perform_tracking_for_eval(params)
         # ----------------- Altered code -----------------------------------------------------
         # Continue to next sequence if the current one wasn't tracked,

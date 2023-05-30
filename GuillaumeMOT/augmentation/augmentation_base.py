@@ -37,8 +37,8 @@ This creation should be added to the function create_child_class_object at the e
 
 """
 
-from os import path, makedirs
-from json import dump
+import pathlib
+from os import path
 from abc import ABC, abstractmethod
 
 # Define name macros of implemented augmentation methods in configs/local_parameters.py and import them here
@@ -52,10 +52,11 @@ class AugmentationMethod(ABC):
         self.name = method_name
         self.map_ratio = self.setup_map_ratio(eagermot_thresholds)
         if automatic_init:
-            self.folder = default_settings["folder"]
+            #self.folder = default_settings["folder"]
+            self.folder = self.get_source_folder_address(True)
             self.bias_ratio = default_settings["bias ratio"]
         else:
-            self.folder = self.get_source_folder_address()
+            self.folder = self.get_source_folder_address(False)
             self.bias_ratio = self.get_bias_ratio_input()
 
     def get_name(self):
@@ -70,23 +71,31 @@ class AugmentationMethod(ABC):
     def get_map_ratio(self, class_target: int):
         return self.map_ratio[class_target]
 
-    def get_source_folder_address(self):
-        default_path = MOUNT_PATH + "/Embeddings/" + self.name + "/"
-        print("The default folder is " + default_path)
-        print("Is your indata saved in the default folder? [y/n]")
-        savechoice = str(input())
-        if savechoice not in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
-            print("Please write the path to your indata.")
-            while True:
-                userpath = str(input(MOUNT_PATH))
-                custom_folder_addr = MOUNT_PATH + userpath
-                if not path.exists(custom_folder_addr):
-                    print("Error: folder does not exist. Please input path again")
-                    continue
-                # return user chosen folder path
-                return custom_folder_addr
+    def get_source_folder_address(self, automatic: bool):
+        if automatic:
+            test = str(max(pathlib.Path(default_settings["folder"]).glob('*/'), key=path.getmtime))
+            # TODO: This is EXACTLY the path we want, the results are in test/<date and time>, sooo....
+            #  just add the code for finding last created folder here and we should be good...
+
+            print(f"At creation, we get the source folder adress {test}")
+            return str(max(pathlib.Path(default_settings["folder"]).glob('*/'), key=path.getmtime))
         else:
-            return default_path
+            default_path = MOUNT_PATH + "/Embeddings/" + self.name + "/"
+            print("The default folder is " + default_path)
+            print("Is your indata saved in the default folder? [y/n]")
+            savechoice = str(input())
+            if savechoice not in ['y', 'Y', 'yes', 'YES', 'Yes', '1', 'default', 'DEFAULT', 'Default']:
+                print("Please write the path to your indata.")
+                while True:
+                    userpath = str(input(MOUNT_PATH))
+                    custom_folder_addr = MOUNT_PATH + userpath
+                    if not path.exists(custom_folder_addr):
+                        print("Error: folder does not exist. Please input path again")
+                        continue
+                    # return user chosen folder path
+                    return custom_folder_addr
+            else:
+                return default_path
 
     def get_bias_ratio_input(self):
         headerstring = " EagerMOT"

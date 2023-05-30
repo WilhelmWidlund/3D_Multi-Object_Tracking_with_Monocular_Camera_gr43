@@ -83,12 +83,6 @@ class TrackManager(object):
                     track_indices_with_motion_models.append(track_i)
                 else:
                     track_indices_without_motion_models.append(track_i)
-
-            # TODO: 4. The path to assignment continues here, calling the
-            #          associate_instances_to_tracks_3d_iou function in data_association.py
-            # print(f"Frame: {self.frame_count - 1}")
-            # The 1st matching stage via 3D IoU
-            # Here, we have params.augment and params.thresholds_per_class AND class_target!!! Besides, params IS sent into the function here, so just add class_target!
             # ----------------------- Altered code ---------------------------------------------------------------------
             matched_instances_to_tracks_first, unmatched_det_indices_first, unmatched_motion_track_indices_first = \
                 associate_instances_to_tracks_3d_iou(det_instances_3d, tracks_with_3d_models, params, class_target)

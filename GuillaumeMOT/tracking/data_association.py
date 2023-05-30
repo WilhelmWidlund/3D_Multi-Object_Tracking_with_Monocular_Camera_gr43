@@ -66,8 +66,6 @@ def associate_instances_to_tracks_3d_iou(detected_instances, tracks, params: Map
                                                      params['augment'], class_target)
         # Concatenate matrices
         matrix_3d_sim = concatenate_matrices(matrix_3d_sim, matrix_visual_recog, params['augment'].get_bias_ratio())
-        # Adjust sign to EagerMOT convention
-        #matrix_3d_sim *= -1
     # ------------ End altered code -------------------------------------------------------
     matched_indices, unmatched_det_ids, unmatched_track_ids = \
         perform_association_from_similarity(len(detected_instances), len(tracks), matrix_3d_sim)
@@ -201,6 +199,7 @@ def match_3d_2d_detections(dets_3d: Sequence[Bbox3d], cam: str, dets_2d: Sequenc
         unmatched_dets_2d_ids.extend([indices_dets_2d_current_class[det_2d_i]
                                       for det_2d_i in unmatched_dets_2d_ids_class])
     return matched_indices, unmatched_dets_3d_ids, unmatched_dets_2d_ids
+
 
 def match_multicam(candidate_matches: Mapping[int, Sequence[CamDetectionIndices]],
                    instances_3d: Sequence[ProjectsToCam]) -> Dict[int, CamDetectionIndices]:

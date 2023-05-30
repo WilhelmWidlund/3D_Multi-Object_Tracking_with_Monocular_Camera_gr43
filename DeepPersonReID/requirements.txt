@@ -15,6 +15,10 @@ yapf
 isort==4.3.21
 imageio
 chardet
+torch
+torchvision
+tensorboard
+sklearn
 # Export --------------------------------------
 # onnx
 # onnx-simplified

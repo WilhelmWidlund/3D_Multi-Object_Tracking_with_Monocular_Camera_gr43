@@ -82,7 +82,18 @@ class MOTSequenceNuScenes(MOTSequence):
         # ------------- Altered code ---------------------------------------------------
         if self.mot.augment.get_name():
             # Update seg_source for concatenation
-            self.seg_source = self.seg_source + "_" + self.split_dir.rsplit('/')[-2]
+            try:
+                seg_ident = self.split_dir.rsplit('/')[-2]
+                #print("place 1")
+            except IndexError:
+                seg_ident = self.split_dir.rsplit('\\')[-3]
+                #print("place 2")
+            #print(f"self.seg_source is {self.seg_source}")
+            #print(f"self.split_dir is {self.split_dir}")
+            #print(f"split_dir_path is {split_dir_path}")
+            #self.seg_source = self.seg_source + "_" + split_dir_path
+            self.seg_source = seg_ident
+           # print(f"self.seg_source is {self.seg_source}")
         # ------------- End altered code -----------------------------------------------
         frames_cam_tokens_detections = loading.load_detections_2d_nuscenes(self.seg_source, self.token)
         frames_cams_detections: Dict[str, Dict[str, List[Detection2D]]

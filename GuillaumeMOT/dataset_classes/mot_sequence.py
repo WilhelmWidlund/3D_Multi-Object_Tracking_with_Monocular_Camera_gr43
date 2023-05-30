@@ -92,17 +92,11 @@ class MOTSequence(ABC):
         for frame_i, frame_name in enumerate(self.frame_names):
             if frame_i % 100 == 0:
                 print(f'Processing frame {frame_name}')
-
             frame = self.get_frame(frame_name)
-
-            # TODO: 2. The path to assignment continues here, calling the perform_tracking function in mot_frame.py
-            # frame.sequence.mot goes on to update in tracking_manager.py
             predicted_instances = frame.perform_tracking(params, run_info)
-
             start_reporting = time.time()
             self.report_mot_results(frame.name, predicted_instances, mot_3d_file, mot_2d_from_3d_file)
             run_info["total_time_reporting"] += time.time() - start_reporting
-
         self.save_mot_results(mot_3d_file, mot_2d_from_3d_file)
         self.save_ego_motion_transforms_if_new()
         return run_info

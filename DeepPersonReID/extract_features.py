@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 import os
 import argparse
 import torch
+import time
 import os.path as osp
 
 def main(args):
@@ -66,9 +67,10 @@ def main(args):
         verbose=True
     )
 
+    first_scene = True
     # Loop over scenes in dataset
     for scene in scene_info:
-        print("New Scene!")
+        #print("New Scene!")
 
         # Get the scene token
         scene_token = scene['token']
@@ -97,9 +99,9 @@ def main(args):
         run = True
 
         while run:
-            print("New Sample!")
+            #print("New Sample!")
             if sample_token == last_sample_token:
-                print("Actually the last sample!")
+                #print("Actually the last sample!")
                 run = False
 
             # Find sample info
@@ -118,7 +120,7 @@ def main(args):
                 if not(sample_data_frame['calibrated_sensor_token'] in camera_calibrated_sensors):
                     # Do nothing if sensor is not a camera
                     continue
-                print("New frame in the sample! Should be 6 of me per sample")
+                #print("New frame in the sample! Should be 6 of me per sample")
 
                 # Load detections for this frame
                 frame_token = sample_data_frame['token']
@@ -127,10 +129,10 @@ def main(args):
                 try:
                     frame_detections = detections[sample_token][frame_token]
                 except:
-                    print('Apperently there are no detections for this frame: ')
-                    print('Sample token: '+ sample_token)
-                    print('Frame token: ' + frame_token)
-                    print('So lets skip it for now')
+                    #print('Apperently there are no detections for this frame: ')
+                    #print('Sample token: '+ sample_token)
+                    #print('Frame token: ' + frame_token)
+                    #print('So lets skip it for now')
                     continue
 
                 # Load the frame, this is the real slow part of the script, could be optimized
@@ -156,19 +158,27 @@ def main(args):
                         detections_with_features[sample_token][frame_token][obj_class][id].append(object_embedding.tolist())
 
             sample_token = next_sample_token
-            
-
         detect_folder_name = args.detections_path.split('/')[-1]
 
         # Save dictionary as JSON file
-        save_root = os.path.join(args.save_path,detect_folder_name)
-        save_file_name = scene_token + '_' + args.model_name +'.json'
-        print(os.path.join(save_root, save_file_name ))
+        if first_scene:
+            print(f"Then, the save_path is created with {args.save_path}, and {detect_folder_name}/<time shit...>")
+            save_root = os.path.join(args.save_path, detect_folder_name)
+            save_path = save_root + "/" + time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime())
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            first_scene = False
+        print(f"Finally, the save_file_name is made with {scene_token} and {args.model_name}.json")
+        save_file_name = scene_token + '_' + args.model_name + '.json'
+        save_file = os.path.join(save_path, save_file_name)
+        print(f"Saving embeddings to {save_file}")
+        with open(save_file, 'w') as f:
+            json.dump(detections_with_features, f, indent=4)
 
-        json_obj = json.dumps(detections_with_features)
+        #json_obj = json.dumps(detections_with_features)
 
-        with open(os.path.join(save_root, save_file_name ), 'w') as fp:
-            fp.write(json_obj)
+        #with open(save_path, 'w') as fp:
+        #    fp.write(json_obj)
 
 if __name__ == "__main__":
     # Arguments defintions
@@ -184,7 +194,12 @@ if __name__ == "__main__":
     parser.add_argument('--dataset_path', default=os.path.join(root,"Datasets/NuScenes/mini"), type=str, help="Path to the dataset containing frame images")
     parser.add_argument('--save_path', default=os.path.join(root,"Embeddings/TorchREID"), type=str, help="Where to save the JSON files containing embeddings")
     parser.add_argument('--conversion_folder_name', default="v1.0-mini", type=str, help="Name of folder containing token conversions JSON files for the scenes. This folder should be in the same folder as the dataset.")
-    parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/modelzoo/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth'), type=str, help="Path to the model creating embeddings")
+
+    # Choose default model
+    #parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/modelzoo/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth'), type=str, help="Path to the model creating embeddings")
+    #parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/osnet_x1_0_nuscenes_softmax_cosinelr\model\model.pth'), type=str, help="Path to the model creating embeddings")
+    parser.add_argument('--model_path', default=os.path.join(root, '\DeepPersonReID\log\osnet_x1_0_nuscenes_tripplet_cosinelr\model\model.pth.tar-250'), type=str, help="Path to the model creating embeddings")
+
     parser.add_argument('--model_name', default="osnet_x1_0", type=str, help="Name of the model used for feature extraction")
     parser.add_argument('--detection_name_ending', default="trainval_cascade_mask_rcnn_x101", type=str, help="The detection files often has an ending of the name of the model used for it. Put this ending here")
     args = parser.parse_args()
