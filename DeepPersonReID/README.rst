@@ -17,16 +17,18 @@ Clone the repository:
 
 .. code-block:: bash
 
-    git clone git@github.com:EliasWilliamGit/deep-person-reid.git
+    git clone git@github.com:WilhelmWidlund/3D_Multi_Object_Tracking_with_Monocular_Camera_gr43.git
 
 - Please see the original Torchreid github for how to install dependencies in a conda enviroment https://github.com/KaiyangZhou/deep-person-reid.
 
 Run feature extraction
 ---------------
 Run the script extract_features.py from the terminal. Specify path to dataset and detections. For all arguments take a closer look at the script. An example run can be seen below.
+Note that this script runs in the inference.py aswell.
 
 .. code-block:: bash
 
+    cd DeepPersonReID
     python extract_features.py --dataset_path C:\Users\Elias\OneDrive\Dokument\LIU\Outgoing\Courses\CIVIL-459\EagerMOT\NuScenes --model_path log\osnet_x1_0_nuscenes_softmax_cosinelr\model\model.pth
 
 The embeddings will be saved in the folder --save_path argument.
@@ -69,10 +71,21 @@ Recreate training on SCITAS GPU cluster
     python3 setup.py develop
 
 
-In the training file you want to run, ex. train_cosine_softmax, change the path to your home directory, then run the script with sbatch.S
+In the training file you want to run, ex. train_cosine_softmax, change the path to your home directory, then run the script with sbatch.
 
-The two slurm files for our two models can also be viewed in the repository, it shows how good the training went.
+The two slurm files for our two models can also be viewed in the repository, it shows how good the training went. The models will be saved in log/
 
+Run training on NuScenes REID dataset on your own computer
+-------------
+You can also run a predefined training script for this repo by running the file train.py
+
+.. code-block:: bash
+
+    python train.py
+
+
+Note that you need to download a folder called nuscenes_reid with the dataset in the folder Datasets/
+The model will be saved in DeepPersonReID/log/
 Contact
 --------------
 For questions, please email: elias.william@epfl.ch

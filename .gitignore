@@ -142,4 +142,5 @@ DeepPersonReID/log/
 DeepPersonReID/saved-models/
 DeepPersonReID/model-zoo/
 DeepPersonReID/debug*
+log/*
 
