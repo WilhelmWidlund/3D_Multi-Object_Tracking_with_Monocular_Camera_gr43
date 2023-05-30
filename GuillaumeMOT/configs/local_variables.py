@@ -8,3 +8,4 @@ KITTI_DATA_DIR = MOUNT_PATH + "/storage/slurm/osep/datasets/kitti"
 
 NUSCENES_WORK_DIR = MOUNT_PATH + "/Workspaces/NuScenes"
 NUSCENES_DATA_DIR = MOUNT_PATH + "/Datasets/NuScenes/Mini"
+NUSCENES_DATA_VER = 'v1.0-mini'

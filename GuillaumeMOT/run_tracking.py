@@ -1,13 +1,14 @@
 import time
 import sys
 from typing import List, Iterable
+from utils.io import store_dataset_info
 
 # for NuScenes eval
 
 #import dataset_classes.kitti.mot_kitti as mot_kitti
 from dataset_classes.nuscenes.dataset import MOTDatasetNuScenes
 from configs.params import KITTI_BEST_PARAMS, NUSCENES_BEST_PARAMS, variant_name_from_params
-from configs.local_variables import MOUNT_PATH, KITTI_WORK_DIR, SPLIT, NUSCENES_WORK_DIR
+import configs.local_variables as local_vars
 # ------------------ Altered code ----------------------------------------------------------------------
 from augmentation.augmentation_params import AUTOMATIC_INIT
 from augmentation.augmentation_base import init_augment
@@ -19,7 +20,7 @@ import inputs.utils as input_utils
 def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exclude=[], print_debug_info=True):
 
     if len(target_sequences) == 0:
-        target_sequences = dataset.sequence_names(SPLIT)
+        target_sequences = dataset.sequence_names(local_vars.SPLIT)
 
     total_frame_count = 0
     total_time = 0
@@ -54,7 +55,7 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
 
         print(f'Starting sequence: {sequence_name}')
         start_time = time.time()
-        sequence = dataset.get_sequence(SPLIT, sequence_name, params['augment'])
+        sequence = dataset.get_sequence(local_vars.SPLIT, sequence_name, params['augment'])
         sequence.mot.set_track_manager_params(params)
         variant = variant_name_from_params(params)
         # TODO: 1. The path to assignment starts here, calling the perform_tracking_for_eval function in mot_sequence.py
@@ -106,20 +107,24 @@ def perform_tracking_full(dataset, params, target_sequences=[], sequences_to_exc
 
     # ------- Altered code -------------------------------------------------------------------------------
     # Get a path from user for where to save the results, if in manual mode
-    default_save_path = MOUNT_PATH + "/Results/" + time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime())
+    default_save_path = local_vars.MOUNT_PATH + "/Results/" + time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime())
     if params["autorun"]:
         save_path = default_save_path
-        dataset.save_all_mot_results(save_path)
-        params["augment"].save_augmentation_parameters(save_path)
     else:
         print("The default folder is " + default_save_path)
         save_folder_query = "Would you like to save the results in the default folder?"
         save_folder_prompt = "Write a path to save the results in..."
-        save_path = get_generic_folder(MOUNT_PATH, save_folder_query, save_folder_prompt, True)
-        # Save results
-        dataset.save_all_mot_results(save_path)
-        params["augment"].save_augmentation_parameters(save_path)
+        save_path = get_generic_folder(local_vars.MOUNT_PATH, save_folder_query, save_folder_prompt, True)
+    # Save results
+    dataset.save_all_mot_results(save_path)
+    # Save augmentation parameters
+    params["augment"].save_augmentation_parameters(save_path)
+    # Save dataset info
+    dataset_info = {"Dataset directory": local_vars.NUSCENES_DATA_DIR,
+                    "Dataset version": local_vars.NUSCENES_DATA_VER, "Split": local_vars.SPLIT}
+    store_dataset_info(save_path, dataset_info)
     # ------- End altered code -------------------------------------------------------------------------------
+
 
     if not print_debug_info:
         return variant, run_info
@@ -193,7 +198,7 @@ def perform_tracking_with_params(dataset, params,
 def run_on_nuscenes(autorun: bool):
     VERSION = "v1.0-mini"
     NUSCENES_BEST_PARAMS["autorun"] = autorun
-    mot_dataset = MOTDatasetNuScenes(work_dir=NUSCENES_WORK_DIR,
+    mot_dataset = MOTDatasetNuScenes(work_dir=local_vars.NUSCENES_WORK_DIR,
                                      det_source=input_utils.CENTER_POINT,
                                      seg_source=input_utils.MMDETECTION_CASCADE_NUIMAGES,
                                      version=VERSION)
@@ -216,7 +221,7 @@ def run_on_kitti():
 
     # To reproduce "Ours (dagger)" results in Table II in the paper,
     # change det_source to input_utils.AB3DMOT and run on the VAL set
-    mot_dataset = mot_kitti.MOTDatasetKITTI(work_dir=KITTI_WORK_DIR,
+    mot_dataset = mot_kitti.MOTDatasetKITTI(work_dir=local_varsKITTI_WORK_DIR,
                                             det_source=input_utils.POINTGNN_T3,
                                             seg_source=input_utils.TRACKING_BEST)
 
@@ -231,11 +236,12 @@ def run_on_kitti():
 
 if __name__ == "__main__":
     autorun = True
+    argmnts = []
     if len(sys.argv) > 1:
-        argmnt = str(sys.argv[1])
-        if str(sys.argv[1]) == "-manual":
-            autorun = False
-            print("Manual execution...\n======")
+        argmnts = str(sys.argv)
+    if "-manual" in argmnts:
+        autorun = False
+        print("Manual execution...\n======")
     else:
         print("Automatic execution...\n======")
     run_on_nuscenes(autorun)
