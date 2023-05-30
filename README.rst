@@ -65,8 +65,11 @@ Recreate training on SCITAS GPU cluster
     #Install pytorch version 1.13.1 with cuda.
     python3 -m pip install torch==1.13.1+rocm5.2 torchvision torchaudio
 
+    # install torchreid
+    python3 setup.py develop
 
-In the training file you want to run, ex. train_cosine_softmax, change the path to your home directory
+
+In the training file you want to run, ex. train_cosine_softmax, change the path to your home directory, then run the script with sbatch.S
 
 The two slurm files for our two models can also be viewed in the repository, it shows how good the training went.
 
