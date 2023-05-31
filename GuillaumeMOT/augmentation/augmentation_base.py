@@ -51,7 +51,6 @@ class AugmentationMethod(ABC):
         self.name = method_name
         self.map_ratio = self.setup_map_ratio(eagermot_thresholds)
         if automatic_init:
-            #self.folder = default_settings["folder"]
             self.folder = self.get_source_folder_address(True)
             self.bias_ratio = default_settings["bias ratio"]
         else:
