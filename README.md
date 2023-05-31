@@ -100,10 +100,9 @@ Firstly, setup the enviroment for running torchreid. This can be found in DeepPe
 
 This is a predefined training script for this repo. Run the following command.
 
-.. code-block:: bash
-
+```ruby
     python train.py
-
+```
 
 Note that you need to download a folder called nuscenes_reid with the dataset in the folder Datasets/
 The model will be saved in log/
