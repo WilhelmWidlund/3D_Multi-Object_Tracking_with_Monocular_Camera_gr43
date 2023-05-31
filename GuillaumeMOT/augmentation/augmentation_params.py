@@ -16,15 +16,10 @@ default_folder = MOUNT_PATH + "/Embeddings/" + VISUAL_SIM_NAME + "/"
 default_settings = {"method": "vis_sim_2d", "name": VISUAL_SIM_NAME, "folder": default_folder, "bias ratio": 0.5,
                     "n": None, "history function": 1, "similarity function": 1}
 # Threshold parameters
-# TODO: figure out good values... Could put a breakpoint in the place where both matrices are in memory,
-#  and look at what scores there are for augment ones that correspond to EagerMOT ones near the threshold...
-#  That ought to get us in the ballpark at least...
-#  affinity_matrix_utils row 44 is a good place.
-#  It has conc_matrix, matrix_0, and matrix_1 (after normalization but w/e comparisons can be made)
-VIS_SIM_2D_THRESHOLDS = {1: 0.7,   # car
-                         2: 0.7,   # pedestrian
-                         3: 0.7,   # bicycle
-                         4: 0.7,   # bus
-                         5: 0.7,   # motorcycle
+VIS_SIM_2D_THRESHOLDS = {1: 0.65,   # car
+                         2: 0.6,   # pedestrian
+                         3: 0.6,   # bicycle
+                         4: 0.8,   # bus
+                         5: 0.5,   # motorcycle
                          6: 0.7,   # trailer
-                         7: 0.7}   # truck
+                         7: 0.8}   # truck

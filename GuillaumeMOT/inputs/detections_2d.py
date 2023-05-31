@@ -1,12 +1,14 @@
 from __future__ import annotations
 import os
+import glob
 import ujson as json
+import pathlib
 from typing import Dict, List
 from collections import defaultdict
 
 import numpy as np
 
-from configs.local_variables import MOUNT_PATH
+from augmentation.augmentation_params import VISUAL_SIM_NAME
 import inputs.utils as utils
 import inputs.detection_2d as detection_2d
 # from inputs.bbox import Bbox2d
@@ -100,8 +102,9 @@ def load_detections_2d_efficient_det(seq_name: str) -> Dict[str, Dict[str, List[
 # ------------------------- Altered code ---------------------------------------------------------------------
 def load_detections_2d_mmdetection_nuscenes(seq_name: str, modify_path: str = None) -> Dict[str, Dict[str, List[detection_2d.Detection2D]]]:
     path = utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES
-    if modify_path == "TorchReID":
-        path = utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES_TORCHREID
+    if modify_path == VISUAL_SIM_NAME:
+        path = utils.DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES_VISUAL_SIM
+        path = str(max(pathlib.Path(path).glob('2*/'), key=os.path.getmtime))
     all_dets = utils.load_json_for_sequence(path, seq_name)
     # --------------------- End altered code ------------------------------------------------------------------
     frames_cam_tokens_detections: Dict[str, Dict[str, List[detection_2d.Detection2D]]

@@ -26,7 +26,7 @@ MOTSFUSION_BEST = 'motsfusion_best'
 TRACKING_BEST = 'rrc_trackrcnn'
 MMDETECTION_CASCADE_NUIMAGES = 'mmdetection_cascade_nuimages'
 # ------------------ Altered code ------------------------------------
-MMDETECTION_CASCADE_NUIMAGES_VISUAL_SIM_NAME = 'mmdetection_cascade_nuimages_' + VISUAL_SIM_NAME
+MMDETECTION_CASCADE_NUIMAGES_VISUAL_SIM_NAME = VISUAL_SIM_NAME
 # ------------------ End altered code --------------------------------
 
 # Edit paths to point to where you store 3D and 2D detections / segmentations on your machine
@@ -43,8 +43,8 @@ DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES = MOUNT_PATH + \
 DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_KITTI = MOUNT_PATH + \
     "/storage/mmdetection_cascade_x101_kitti/" + SPLIT
 # ------------------ Altered code ------------------------------------
-DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES_TORCHREID = MOUNT_PATH + \
-    '/Embeddings/TorchReID/' + SPLIT
+DETECTIONS_MMDETECTION_CASCADE_NUIMAGES_NUSCENES_VISUAL_SIM = MOUNT_PATH + \
+    '/Embeddings/' + VISUAL_SIM_NAME
 # ------------------ End altered code --------------------------------
 
 ########################################3333

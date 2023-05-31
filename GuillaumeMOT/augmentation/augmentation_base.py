@@ -41,7 +41,6 @@ import pathlib
 from os import path
 from abc import ABC, abstractmethod
 
-# Define name macros of implemented augmentation methods in configs/local_parameters.py and import them here
 from configs.local_variables import MOUNT_PATH
 from augmentation.augmentation_params import VISUAL_SIM_NAME, augmentation_methods, default_settings
 import augmentation.augmentation_base_utils as utils_aug
@@ -73,12 +72,7 @@ class AugmentationMethod(ABC):
 
     def get_source_folder_address(self, automatic: bool):
         if automatic:
-            test = str(max(pathlib.Path(default_settings["folder"]).glob('*/'), key=path.getmtime))
-            # TODO: This is EXACTLY the path we want, the results are in test/<date and time>, sooo....
-            #  just add the code for finding last created folder here and we should be good...
-
-            print(f"At creation, we get the source folder adress {test}")
-            return str(max(pathlib.Path(default_settings["folder"]).glob('*/'), key=path.getmtime))
+            return str(max(pathlib.Path(default_settings["folder"]).glob('2*/'), key=path.getmtime))
         else:
             default_path = MOUNT_PATH + "/Embeddings/" + self.name + "/"
             print("The default folder is " + default_path)

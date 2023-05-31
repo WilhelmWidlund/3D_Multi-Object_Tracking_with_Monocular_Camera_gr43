@@ -158,27 +158,18 @@ def main(args):
                         detections_with_features[sample_token][frame_token][obj_class][id].append(object_embedding.tolist())
 
             sample_token = next_sample_token
-        detect_folder_name = args.detections_path.split('/')[-1]
 
         # Save dictionary as JSON file
         if first_scene:
-            print(f"Then, the save_path is created with {args.save_path}, and {detect_folder_name}/<time shit...>")
-            save_root = os.path.join(args.save_path, detect_folder_name)
-            save_path = save_root + "/" + time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime())
+            save_path = args.save_path + "/" + time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime())
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
             first_scene = False
-        print(f"Finally, the save_file_name is made with {scene_token} and {args.model_name}.json")
-        save_file_name = scene_token + '_' + args.model_name + '.json'
+        save_file_name = scene_token + '.json'
         save_file = os.path.join(save_path, save_file_name)
         print(f"Saving embeddings to {save_file}")
         with open(save_file, 'w') as f:
             json.dump(detections_with_features, f, indent=4)
-
-        #json_obj = json.dumps(detections_with_features)
-
-        #with open(save_path, 'w') as fp:
-        #    fp.write(json_obj)
 
 if __name__ == "__main__":
     # Arguments defintions
@@ -197,7 +188,8 @@ if __name__ == "__main__":
 
     # Choose default model
     #parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/modelzoo/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth'), type=str, help="Path to the model creating embeddings")
-    #parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/osnet_x1_0_nuscenes_softmax_cosinelr\model\model.pth'), type=str, help="Path to the model creating embeddings")
+    # The following two are trained on the NuScenes dataset
+    #parser.add_argument('--model_path', default=os.path.join(root, 'DeepPersonReID/log/osnet_x1_0_nuscenes_softmax_cosinelr\model\model.pth.tar-250'), type=str, help="Path to the model creating embeddings")
     parser.add_argument('--model_path', default=os.path.join(root, '\DeepPersonReID\log\osnet_x1_0_nuscenes_tripplet_cosinelr\model\model.pth.tar-250'), type=str, help="Path to the model creating embeddings")
 
     parser.add_argument('--model_name', default="osnet_x1_0", type=str, help="Name of the model used for feature extraction")
