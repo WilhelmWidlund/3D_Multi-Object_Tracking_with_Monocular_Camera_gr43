@@ -49,6 +49,11 @@ Results
 ---------------
 For the training evalutation, the best model obtained was with combining triplet loss and softmax loss for 250 epochs. We obtained a mAP score of 79.1% and CMC curve rank-1 of 80.2% on the nuscenes_reid evaluation set. The training took approximatly 3 hours on the SCITAS gpu cluster.
 
+Using the hyperparameters chosen in Tuning above, and the model trained on the NuScenes dataset with the triplet softmax loss function, we achieved the following results when using the NuScenes DevKit evaluation script:
+![Alt text](Documentation/Diagrams/our_best_result.png?raw=true)
+Compared to the EagerMOT score on the same evaluation, we have improved IDS significantly while maintaining the other scores on a comparable level. In the picture below, our scores can be seen on the left, and the EagerMOT scores on the right:
+![Alt text](Documentation/Diagrams/compared_results_our_left_EagerMOT_right.png?raw=true)
+
 Limitations
 ---------------
 While the initial project description called for both detection and tracking, we quickly made the decision to only consider the tracking aspect. This decision was made due to the already large scope of the detection augmentation, and the fact that another project in the same course was concerned with only detection. Quite simply put, doing both would result in an unreasonably large work burden. This decision was made after consulting out Teacher's Assistant.
