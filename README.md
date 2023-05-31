@@ -53,6 +53,7 @@ Using the hyperparameters chosen in Tuning above, and the model trained on the N
 ![Alt text](Documentation/Diagrams/our_best_result.png?raw=true)
 Compared to the EagerMOT score on the same evaluation, we have improved IDS significantly while maintaining the other scores on a comparable level. In the picture below, our scores can be seen on the left, and the EagerMOT scores on the right:
 ![Alt text](Documentation/Diagrams/compared_results_our_left_EagerMOT_right.png?raw=true)
+
 One notable improvement between our own score and that of EagerMOT is the IDS per class: in the pedestrian class, we have 13 compared to the 23 of EagerMOT. This shows that adding visual recognition to classes that may change drastically in geometric status between frames can greatly help with re-identification, compared to an exclusively geometric method such as EagerMOT.
 
 Limitations
