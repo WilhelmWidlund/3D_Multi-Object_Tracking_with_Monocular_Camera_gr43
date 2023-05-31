@@ -11,7 +11,33 @@ The result of this modular development is that our tracker may easily be either 
 
 Tuning
 ---------------
-After creating the tracker, we moved on to finding appropriate hyperparameters. This was done using a grid search method. However, due to lack of time before the project deadline this process was regrettably very short. We are confident that further searching could have improved the scores significantly.
+After creating the tracker, we moved on to finding appropriate hyperparameters. This was done using a grid search method, evaluating different sets of hyperparameters on the NuScenes-Mini evaluation dataset. However, due to lack of time before the project deadline this process was regrettably very short. We are confident that further searching could have improved the scores significantly. Tuning of the model was done with a focus of improving the IDS score while maintaining a comparable AMOTA score.
+![Alt text](Documentation/Diagrams/hyperparams_1.png?raw=true)
+As the overall search plot shows, values quickly converged to the same region as EagerMOT. A fine-tuning process led to a set of hyperparameters deemed good enough given the short time spent on the hyperparameter search.
+![Alt text](Documentation/Diagrams/hyperparams_2.png?raw=true)
+The chosen set of hyperparameters are the second best achieved IDS score, while maintaining an AMOTA score that is very close to the EagerMOT level.
+These hyperparameters are:
+
+| Hyperparameter | Value |
+| :-----:        | :---: |
+| Bias ratio     | 0.55  |
+| Similarity score function     | Cosine similarity |
+| Feature vector history function | Equal weight for n most recent feature vectors |
+| n | 3 |
+
+And for the class thresholds, the chosen hyperparameters are
+
+| Class   | Threshold |
+| :-----: | :---: |
+| Car | 0.65 |
+| Pedestrian | 0.6 |
+| Bicycle | 0.6 |
+| Bus | 0.8  |
+| Motorcycle | 0.5 |
+| Trailer | 0.7 |
+| Truck | 0.8 |
+
+However, a more thorough hyperparameter search process could most likely result in further improvement.
 
 Training
 ---------------
