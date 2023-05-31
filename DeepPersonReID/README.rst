@@ -86,6 +86,7 @@ You can also run a predefined training script for this repo by running the file 
 
 Note that you need to download a folder called nuscenes_reid with the dataset in the folder Datasets/
 The model will be saved in DeepPersonReID/log/
+
 Contact
 --------------
 For questions, please email: elias.william@epfl.ch
