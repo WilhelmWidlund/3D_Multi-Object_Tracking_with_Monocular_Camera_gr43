@@ -17,6 +17,7 @@ Training
 ---------------
 In the project two ReID models were trained on the SCITAS gpu clusters. One with triplet loss and softmax loss and one with only softmax loss. More information about this in DeepPersonReID/
 The evaluation for these models can be seen at the end of their respective slurm-file. The models can be downloaded and used during inference from https://drive.google.com/drive/folders/1BYgqf6inddm64rKKsxZrkx3DGKotaCQn.
+To achive this training, a new dataset class has been created. nuscenes.py unde DeepPersonReID/torchreid/data/datasets/image.
 
 Results
 ---------------
