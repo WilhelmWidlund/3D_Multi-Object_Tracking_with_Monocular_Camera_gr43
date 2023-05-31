@@ -36,8 +36,8 @@ if __name__ == "__main__":
         argmnts = str(sys.argv)
 
     # Activate TorchReID conda environment and run TorchReID
-    subprocess.run(f"conda activate {CNN_env_name} && python {torchreid_feature_extraction} && conda deactivate",
-                   shell=True)
+    #subprocess.run(f"conda activate {CNN_env_name} && python {torchreid_feature_extraction} && conda deactivate",
+    #               shell=True)
 
     # Activate GuillaumeMOT conda environment and run GuillaumeMOT
     subprocess.run(f"conda activate {GuillaumeMOT_env_name} && python {guillaumemot_tracking} && conda deactivate",

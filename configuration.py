@@ -1,1 +1,0 @@
-SPLIT = 'mini_val'
